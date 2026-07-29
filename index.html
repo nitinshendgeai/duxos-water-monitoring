@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ariana Residency CHS Water Monitoring System</title>
+<style>
+  :root{
+    --blue:#22d3ee;
+    --blue-dark:#7dd3fc;
+    --blue-light:rgba(34,211,238,0.14);
+    --gold:#f2b84b;
+    --gold-dark:#c8922b;
+    --gold-light:rgba(242,184,75,0.16);
+    --text:#e7f6fb;
+    --muted:#6f93a0;
+    --border:#16394a;
+    --bg:#031b24;
+    --card:#0c2e3d;
+    --success:#34d399;
+    --success-bg:rgba(52,211,153,0.14);
+    --radius:8px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+  }
+
+  header{
+    background:linear-gradient(135deg, #062633, #0a4a5c);
+    color:#eafcff;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border-bottom:2px solid var(--blue);
+    box-shadow:0 2px 16px rgba(34,211,238,0.25);
+  }
+  header h1{
+    font-size:1.05rem;
+    margin:0;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+  header .trident{
+    color:var(--gold);
+    font-size:1.2rem;
+  }
+  #backBtn{
+    background:rgba(34,211,238,0.12);
+    border:1px solid rgba(34,211,238,0.4);
+    color:#eafcff;
+    padding:8px 14px;
+    border-radius:var(--radius);
+    font-size:0.9rem;
+    cursor:pointer;
+    display:none;
+  }
+  #backBtn:active{background:rgba(34,211,238,0.25);}
+
+  main{
+    max-width:600px;
+    margin:0 auto;
+    padding:20px 16px 60px;
+  }
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* Home cards */
+  .card-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .home-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px;
+    text-align:left;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-size:1rem;
+    width:100%;
+  }
+  .home-card:active{background:var(--blue-light);}
+  .home-card .emoji{font-size:1.6rem; flex-shrink:0;}
+  .home-card .title{font-weight:600; color:var(--text);}
+  .home-card .desc{font-size:0.82rem; color:var(--muted); margin-top:2px;}
+
+  .home-card.disabled{
+    opacity:0.55;
+    cursor:not-allowed;
+  }
+  .badge{
+    margin-left:auto;
+    background:rgba(255,255,255,0.08);
+    color:var(--muted);
+    font-size:0.68rem;
+    font-weight:600;
+    padding:4px 8px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+
+  /* Date/time display */
+  .datetime-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .datetime-box{
+    flex:1;
+    background:var(--blue-light);
+    border-radius:var(--radius);
+    padding:10px 14px;
+  }
+  .datetime-box .label{
+    font-size:0.7rem;
+    color:var(--blue-dark);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    font-weight:600;
+  }
+  .datetime-box .value{
+    font-size:0.95rem;
+    color:var(--text);
+    margin-top:2px;
+  }
+
+  /* Form styles */
+  .form-section{
+    margin-bottom:18px;
+  }
+  .section-title{
+    font-size:0.85rem;
+    font-weight:700;
+    color:var(--blue-dark);
+    margin-bottom:10px;
+  }
+  .field{
+    margin-bottom:14px;
+  }
+  .field label{
+    display:block;
+    font-size:0.88rem;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:6px;
+  }
+  .field .optional{
+    font-weight:400;
+    color:var(--muted);
+    font-size:0.78rem;
+  }
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    font-size:1rem;
+    font-family:inherit;
+    color:var(--text);
+    background:var(--card);
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--blue);
+    outline-offset:1px;
+    border-color:var(--blue);
+  }
+  textarea{resize:vertical; min-height:70px;}
+
+  .field-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+
+  /* Buttons */
+  .btn-group{
+    display:flex;
+    gap:12px;
+    margin-top:22px;
+  }
+  .btn{
+    flex:1;
+    padding:14px;
+    border-radius:var(--radius);
+    font-size:1rem;
+    font-weight:600;
+    border:none;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--blue), #0891b2);
+    color:#04151c;
+    box-shadow:0 0 14px rgba(34,211,238,0.35);
+  }
+  .btn-primary:active{background:var(--blue-dark);}
+  .btn-secondary{
+    background:var(--card);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  .btn-secondary:active{background:var(--border);}
+
+  /* Success message */
+  .success-message{
+    display:none;
+    background:var(--success-bg);
+    color:var(--success);
+    border:1px solid rgba(61,220,132,0.35);
+    border-radius:var(--radius);
+    padding:14px;
+    font-weight:600;
+    text-align:center;
+    margin-top:16px;
+  }
+  .success-message.show{display:block;}
+
+  /* Staff badge on home cards */
+  .staff-badge{
+    background:var(--gold-light);
+    color:var(--gold);
+    border:1px solid rgba(242,184,75,0.4);
+  }
+
+  /* Staff PIN overlay */
+  .pin-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,20,25,0.5);
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .pin-overlay.show{display:flex;}
+  .pin-box{
+    background:var(--card);
+    border:1px solid var(--gold);
+    box-shadow:0 0 24px rgba(242,184,75,0.2);
+    border-radius:var(--radius);
+    padding:22px;
+    width:100%;
+    max-width:340px;
+  }
+  .pin-box h3{
+    margin:0 0 8px;
+    font-size:1.05rem;
+    color:var(--text);
+  }
+  .pin-box p{
+    margin:0 0 16px;
+    font-size:0.85rem;
+    color:var(--muted);
+  }
+  .pin-box input{
+    width:100%;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    font-size:1.1rem;
+    letter-spacing:0.15em;
+    text-align:center;
+  }
+  .pin-box input:focus{
+    outline:2px solid var(--blue);
+    outline-offset:1px;
+    border-color:var(--blue);
+  }
+  .pin-error{
+    display:none;
+    color:#ff8a80;
+    font-size:0.8rem;
+    margin-top:8px;
+  }
+  .pin-error.show{display:block;}
+
+  /* Dashboard header */
+  .dash-header{
+    background:linear-gradient(135deg, var(--blue-light), #ffffff);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px;
+    margin-bottom:22px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:12px 14px;
+  }
+  .dash-header-icon{
+    width:42px;
+    height:42px;
+    border-radius:11px;
+    background:linear-gradient(135deg, var(--blue), #0a4a5c);
+    border:1px solid var(--gold);
+    color:var(--gold);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3rem;
+    grid-row:1;
+  }
+  .dash-header-text{grid-row:1;}
+  .dash-header-title{
+    font-size:1.05rem;
+    font-weight:700;
+    color:var(--blue-dark);
+    line-height:1.25;
+  }
+  .dash-header-sub{
+    font-size:0.82rem;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .dash-updated-row{
+    grid-column:1 / -1;
+    padding-top:12px;
+    border-top:1px solid rgba(21,101,192,0.12);
+    font-size:0.8rem;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dash-updated-label{
+    font-weight:700;
+    color:var(--blue-dark);
+    text-transform:uppercase;
+    font-size:0.68rem;
+    letter-spacing:0.04em;
+  }
+  .dash-updated-value{
+    color:var(--text);
+    font-weight:600;
+  }
+
+  /* Section titles specific to the Dashboard, with icons */
+  .dash-section-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:0.78rem;
+    font-weight:700;
+    color:var(--blue-dark);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin:26px 0 12px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--blue-light);
+  }
+  .dash-section-title:first-of-type{margin-top:0;}
+  .dash-section-icon{font-size:1rem;}
+
+  /* Dashboard tank / reading cards */
+  .dash-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  .dash-grid-2{
+    grid-template-columns:1fr;
+  }
+  @media(min-width:480px){
+    .dash-grid{grid-template-columns:1fr 1fr;}
+  }
+
+  .dash-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 2px 8px rgba(21,101,192,0.06);
+  }
+  .dash-card-title{
+    font-size:0.92rem;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:14px;
+    padding-bottom:10px;
+    border-bottom:1px solid var(--border);
+  }
+  .dash-row{
+    margin-bottom:14px;
+  }
+  .dash-row:last-child{margin-bottom:0;}
+  .dash-row-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:6px;
+  }
+  .dash-row-label{
+    font-size:0.83rem;
+    color:var(--text);
+    font-weight:600;
+  }
+  .dash-row-value{
+    font-size:0.95rem;
+    font-weight:700;
+    color:var(--blue-dark);
+    white-space:nowrap;
+  }
+  .dash-row-cap{
+    font-size:0.7rem;
+    color:var(--muted);
+    margin-top:5px;
+  }
+
+  .progress-track{
+    width:100%;
+    height:9px;
+    background:var(--border);
+    border-radius:20px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    border-radius:20px;
+    background:var(--blue);
+    box-shadow:0 0 6px rgba(34,211,238,0.6);
+  }
+  .progress-fill.warn{background:#f0a500;}
+  .progress-fill.danger{background:#d32f2f;}
+
+  /* This Week's Meter Reading table */
+  .dash-table-wrap{
+    overflow-x:auto;
+    border:1px solid var(--border);
+    border-radius:12px;
+  }
+  .dash-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.85rem;
+  }
+  .dash-table th, .dash-table td{
+    text-align:left;
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  .dash-table thead th{
+    background:var(--blue-light);
+    color:var(--blue-dark);
+    font-weight:700;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  .dash-table tbody tr:last-child td{border-bottom:none;}
+  .dash-table tbody tr:nth-child(odd){background:rgba(34,211,238,0.03);}
+
+  .dash-meta-line{
+    font-size:0.78rem;
+    color:var(--muted);
+    margin:-4px 0 12px;
+  }
+  .dash-meter-status{
+    grid-column:1 / -1;
+    text-align:center;
+    color:var(--muted);
+    font-size:0.85rem;
+    padding:16px 8px;
+  }
+  .dash-meter-error{color:#ff8a80;}
+
+  /* Today's Meter Reading cards */
+  .dash-meter-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 14px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(21,101,192,0.06);
+  }
+  .dash-meter-card .dash-meter-label{
+    font-size:0.78rem;
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    margin-bottom:8px;
+  }
+  .dash-meter-card .dash-meter-value{
+    font-size:1.55rem;
+    font-weight:700;
+    color:var(--blue-dark);
+  }
+  .dash-meter-card .dash-meter-unit{
+    font-size:0.75rem;
+    font-weight:600;
+    color:var(--muted);
+    margin-left:3px;
+  }
+
+  /* Today's Activities */
+  .dash-activity-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .dash-activity-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-left:4px solid var(--border);
+    border-radius:10px;
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 2px 8px rgba(21,101,192,0.05);
+  }
+  .dash-activity-card.completed{border-left-color:var(--success);}
+  .dash-activity-card.pending{border-left-color:#f0a500;}
+  .dash-activity-name{
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--text);
+  }
+  .activity-badge{
+    font-size:0.75rem;
+    font-weight:700;
+    padding:5px 12px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .activity-badge.completed{
+    background:var(--success-bg);
+    color:var(--success);
+  }
+  .activity-badge.pending{
+    background:rgba(240,165,0,0.16);
+    color:#ffcc66;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button id="backBtn" onclick="App.goHome()">Back</button>
+  <span class="trident">🔱</span>
+  <h1 id="headerTitle">Ariana Residency CHS Water Monitoring System</h1>
+</header>
+
+<main>
+
+  <!-- HOME VIEW -->
+  <section class="view active" id="view-home">
+    <div class="card-list">
+      <button class="home-card" onclick="App.requestStaffAccess('meter')">
+        <span class="emoji">📝</span>
+        <div>
+          <div class="title">Morning Meter Reading</div>
+          <div class="desc">Record daily wing-wise meter readings</div>
+        </div>
+        <span class="badge staff-badge">Staff Only</span>
+      </button>
+
+      <button class="home-card" onclick="App.requestStaffAccess('tank')">
+        <span class="emoji">🚰</span>
+        <div>
+          <div class="title">Tank Status</div>
+          <div class="desc">Record underground &amp; overhead tank levels</div>
+        </div>
+        <span class="badge staff-badge">Staff Only</span>
+      </button>
+
+      <button class="home-card" onclick="App.navigate('dashboard')">
+        <span class="emoji">📊</span>
+        <div>
+          <div class="title">Dashboard</div>
+          <div class="desc">View current tank levels &amp; recent readings</div>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- STAFF PIN OVERLAY -->
+  <div class="pin-overlay" id="pinOverlay">
+    <div class="pin-box">
+      <h3>Staff Access</h3>
+      <p>This section is for staff use only. Enter your personal access code to continue.</p>
+      <input type="password" id="pinInput" inputmode="numeric" placeholder="Enter your code" autocomplete="off">
+      <div class="pin-error" id="pinError">Incorrect code. Please try again.</div>
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="App.cancelStaffAccess()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="App.checkStaffPin()">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- METER READING VIEW -->
+  <section class="view" id="view-meter">
+    <div class="datetime-row">
+      <div class="datetime-box">
+        <div class="label">Date</div>
+        <div class="value" id="meterDate">--</div>
+      </div>
+      <div class="datetime-box">
+        <div class="label">Time</div>
+        <div class="value" id="meterTime">--</div>
+      </div>
+    </div>
+
+    <form id="meterForm" onsubmit="return App.saveMeter(event)">
+      <div class="field">
+        <label for="recordedBy">Recorded By</label>
+        <select id="recordedBy" required>
+          <option value="" disabled selected>Select your name</option>
+        </select>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Meter Readings (KL)</div>
+        <div class="field">
+          <label for="wingA">Wing A Meter Reading</label>
+          <input type="number" step="0.01" id="wingA" required placeholder="0.00">
+        </div>
+        <div class="field">
+          <label for="wingB">Wing B Meter Reading</label>
+          <input type="number" step="0.01" id="wingB" required placeholder="0.00">
+        </div>
+        <div class="field">
+          <label for="wingC">Wing C Meter Reading</label>
+          <input type="number" step="0.01" id="wingC" required placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="meterRemarks">Remarks <span class="optional">(Optional)</span></label>
+        <textarea id="meterRemarks" placeholder="Any observations..."></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="App.goHome()">Back</button>
+        <button type="submit" class="btn btn-primary" id="meterSaveBtn">Save</button>
+      </div>
+
+      <div class="success-message" id="meterSuccess">Meter Reading Saved Successfully.</div>
+      <div class="success-message" id="meterError" style="background:rgba(211,47,47,0.16); color:#ff8a80; border-color:rgba(211,47,47,0.4);"></div>
+    </form>
+  </section>
+
+  <!-- TANK STATUS VIEW -->
+  <section class="view" id="view-tank">
+    <div class="datetime-row">
+      <div class="datetime-box">
+        <div class="label">Date</div>
+        <div class="value" id="tankDate">--</div>
+      </div>
+      <div class="datetime-box">
+        <div class="label">Time</div>
+        <div class="value" id="tankTime">--</div>
+      </div>
+    </div>
+
+    <form id="tankForm" onsubmit="return App.saveTank(event)">
+      <div class="field">
+        <label for="session">Session</label>
+        <select id="session" required>
+          <option value="" disabled selected>Select session</option>
+          <option value="Morning">Morning</option>
+          <option value="Afternoon">Afternoon</option>
+          <option value="Night">Night</option>
+        </select>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Underground Domestic Water (L)</div>
+        <div class="field">
+          <label for="ugDomesticAB">Wing A + B <span class="optional">(Common Tank · Capacity: 90,000 L)</span></label>
+          <input type="number" id="ugDomesticAB" required placeholder="0">
+        </div>
+        <div class="field">
+          <label for="ugDomesticC">Wing C <span class="optional">(Capacity: 45,000 L)</span></label>
+          <input type="number" id="ugDomesticC" required placeholder="0">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Underground Flushing Water (L)</div>
+        <div class="field">
+          <label for="ugFlushingAB">Wing A + B <span class="optional">(Common Tank · Capacity: 50,000 L)</span></label>
+          <input type="number" id="ugFlushingAB" required placeholder="0">
+        </div>
+        <div class="field">
+          <label for="ugFlushingC">Wing C <span class="optional">(Capacity: 28,000 L)</span></label>
+          <input type="number" id="ugFlushingC" required placeholder="0">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Fire Tank</div>
+        <div class="field">
+          <label for="fireTank">Fire Tank Level (%)</label>
+          <input type="number" min="0" max="100" id="fireTank" required placeholder="0">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Overhead Domestic (%)</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="ohDomA">Wing A</label>
+            <input type="number" min="0" max="100" id="ohDomA" required placeholder="0">
+          </div>
+          <div class="field">
+            <label for="ohDomB">Wing B</label>
+            <input type="number" min="0" max="100" id="ohDomB" required placeholder="0">
+          </div>
+        </div>
+        <div class="field">
+          <label for="ohDomC">Wing C</label>
+          <input type="number" min="0" max="100" id="ohDomC" required placeholder="0">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Overhead Flushing (%)</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="ohFlushA">Wing A</label>
+            <input type="number" min="0" max="100" id="ohFlushA" required placeholder="0">
+          </div>
+          <div class="field">
+            <label for="ohFlushB">Wing B</label>
+            <input type="number" min="0" max="100" id="ohFlushB" required placeholder="0">
+          </div>
+        </div>
+        <div class="field">
+          <label for="ohFlushC">Wing C</label>
+          <input type="number" min="0" max="100" id="ohFlushC" required placeholder="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="tankRemarks">Remarks <span class="optional">(Optional)</span></label>
+        <textarea id="tankRemarks" placeholder="Any observations..."></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="App.goHome()">Back</button>
+        <button type="submit" class="btn btn-primary" id="tankSaveBtn">Save</button>
+      </div>
+
+      <div class="success-message" id="tankSuccess">Tank Status Saved Successfully.</div>
+      <div class="success-message" id="tankError" style="background:rgba(211,47,47,0.16); color:#ff8a80; border-color:rgba(211,47,47,0.4);"></div>
+    </form>
+  </section>
+
+  <!-- DASHBOARD VIEW (read-only, dummy data — see DASHBOARD_DATA in script) -->
+  <section class="view" id="view-dashboard">
+
+    <div class="dash-header">
+      <div class="dash-header-icon">🔱</div>
+      <div class="dash-header-text">
+        <div class="dash-header-title">Water Monitoring Dashboard</div>
+        <div class="dash-header-sub">Ariana Residency CHS Ltd.</div>
+      </div>
+      <div class="dash-updated-row">
+        <span class="dash-updated-label">Last Updated</span>
+        <span class="dash-updated-value"><span id="dashUpdatedDate"></span> · <span id="dashUpdatedTime"></span></span>
+      </div>
+    </div>
+
+    <div class="dash-section-title"><span class="dash-section-icon">🛢️</span>Underground Tank Status</div>
+    <div class="dash-grid" id="dashUndergroundGrid"></div>
+
+    <div class="dash-section-title"><span class="dash-section-icon">🏢</span>Overhead Tank Status</div>
+    <div class="dash-grid dash-grid-2" id="dashOverheadGrid"></div>
+
+    <div class="dash-section-title"><span class="dash-section-icon">📟</span>Today's Meter Reading</div>
+    <div class="dash-meta-line" id="dashMeterAsOf"></div>
+    <div class="dash-grid" id="dashMeterGrid"></div>
+
+    <div class="dash-section-title"><span class="dash-section-icon">📅</span>This Week's Meter Reading</div>
+    <div class="dash-table-wrap">
+      <table class="dash-table" id="dashWeeklyTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Wing A (KL)</th>
+            <th>Wing B (KL)</th>
+            <th>Wing C (KL)</th>
+          </tr>
+        </thead>
+        <tbody id="dashWeeklyBody"></tbody>
+      </table>
+    </div>
+
+    <div class="dash-section-title"><span class="dash-section-icon">✅</span>Today's Activities</div>
+    <div class="dash-activity-list" id="dashActivityList"></div>
+
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   App - simple SPA router + view logic
+   Modular by design: each screen has its own init/save function
+   so new screens (e.g. Dashboard) can be added without touching
+   existing code.
+============================================================ */
+const App = (function () {
+
+  // Individual access codes — one per staff member. Anyone entering their
+  // own code unlocks the staff area, and their name is auto-filled into
+  // "Recorded By" so each entry is tied to the right person.
+  // Edit the codes below to whatever you want each person to use.
+  // This is a simple deterrent for casual/resident access, not real security:
+  // the codes live in the page's source code and are visible to anyone who
+  // views it. Don't use this to protect sensitive data.
+  const STAFF_PINS = {
+    'Karan': '1111',
+    'Rohit': '2222',
+    'Dinesh': '3333',
+    'Jayprakash': '4444',
+    'Security': '5555'
+  };
+
+  // List of staff names shown in the "Recorded By" dropdown.
+  // Kept as its own list (in the same order as STAFF_PINS) so the dropdown
+  // order is easy to control independently of the codes above.
+  const STAFF_NAMES = [
+    'Karan',
+    'Rohit',
+    'Dinesh',
+    'Jayprakash',
+    'Security'
+  ];
+
+  // Tracks which staff view is waiting for PIN entry.
+  let pendingView = null;
+
+  // Name of the staff member whose code was last entered correctly —
+  // used to pre-fill "Recorded By" after unlocking.
+  let matchedStaffName = null;
+
+  // Paste the Google Apps Script Web App URL here after deployment.
+  // See DEPLOYMENT_GUIDE.md for setup steps.
+  const API_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+
+  // Tank capacities (Litres) — used for reference display now,
+  // and available for future calculations (e.g. Dashboard).
+  // Underground: Wing A+B share one common tank; Wing C is separate.
+  // Overhead: Wing A, B, C are independent tanks (capacities not yet provided).
+  const TANK_CAPACITY = {
+    ugDomesticAB: 90000,
+    ugDomesticC: 45000,
+    ugFlushingAB: 50000,
+    ugFlushingC: 28000
+  };
+
+  const titles = {
+    home:  'Ariana Residency CHS Water Monitoring System',
+    meter: 'Morning Meter Reading',
+    tank:  'Tank Status',
+    dashboard: 'Dashboard'
+  };
+
+  function navigate(viewName) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewName).classList.add('active');
+
+    document.getElementById('headerTitle').textContent = titles[viewName];
+    document.getElementById('backBtn').style.display = (viewName === 'home') ? 'none' : 'inline-block';
+
+    if (viewName === 'meter') stampDateTime('meterDate', 'meterTime');
+    if (viewName === 'tank') stampDateTime('tankDate', 'tankTime');
+    if (viewName === 'dashboard') loadDashboard();
+
+    hideMessage('meterSuccess');
+    hideMessage('meterError');
+    hideMessage('tankSuccess');
+    hideMessage('tankError');
+
+    window.scrollTo(0, 0);
+  }
+
+  function goHome() {
+    navigate('home');
+  }
+
+  /**
+   * Fills the "Recorded By" dropdown from the STAFF_NAMES config list.
+   * Called once on page load.
+   */
+  function populateStaffNames() {
+    const select = document.getElementById('recordedBy');
+    STAFF_NAMES.forEach(function (name) {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
+    });
+  }
+
+  /**
+   * Called when a staff-only card is tapped. Always shows the PIN
+   * overlay — staff must enter the PIN every time, not just once
+   * per session.
+   */
+  function requestStaffAccess(viewName) {
+    pendingView = viewName;
+    document.getElementById('pinInput').value = '';
+    hideMessage('pinError');
+    document.getElementById('pinOverlay').classList.add('show');
+    document.getElementById('pinInput').focus();
+  }
+
+  function cancelStaffAccess() {
+    pendingView = null;
+    document.getElementById('pinOverlay').classList.remove('show');
+  }
+
+  function checkStaffPin() {
+    const entered = document.getElementById('pinInput').value.trim();
+    const match = Object.keys(STAFF_PINS).find(function (name) {
+      return STAFF_PINS[name] === entered;
+    });
+
+    if (match) {
+      matchedStaffName = match;
+      document.getElementById('pinOverlay').classList.remove('show');
+      const target = pendingView;
+      pendingView = null;
+      navigate(target);
+      prefillRecordedBy();
+    } else {
+      document.getElementById('pinError').classList.add('show');
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinInput').focus();
+    }
+  }
+
+  /**
+   * Pre-fills the "Recorded By" dropdown with the name matched from the
+   * code just entered. Only applies on the Morning Meter Reading screen,
+   * since that's the only form with a "Recorded By" field. Staff can still
+   * change it manually if someone is logging on another person's behalf.
+   */
+  function prefillRecordedBy() {
+    const select = document.getElementById('recordedBy');
+    if (select && matchedStaffName) {
+      select.value = matchedStaffName;
+    }
+  }
+
+  function stampDateTime(dateElId, timeElId) {
+    const now = new Date();
+    document.getElementById(dateElId).textContent =
+      now.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+    document.getElementById(timeElId).textContent =
+      now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function showMessage(id, text) {
+    const el = document.getElementById(id);
+    if (text) el.textContent = text;
+    el.classList.add('show');
+  }
+
+  function hideMessage(id) {
+    document.getElementById(id).classList.remove('show');
+  }
+
+  function setSaving(btnId, saving) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = saving;
+    btn.textContent = saving ? 'Saving...' : 'Save';
+  }
+
+  /**
+   * Sends form data to the Apps Script backend.
+   * formType: 'meter' | 'tank'
+   */
+  function submitToBackend(formType, data) {
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // avoids CORS preflight on Apps Script
+      body: JSON.stringify({ formType: formType, data: data })
+    }).then(function (response) {
+      return response.json();
+    }).then(function (result) {
+      if (result.status !== 'success') {
+        throw new Error(result.message || 'Save failed.');
+      }
+      return result;
+    });
+  }
+
+  /**
+   * ------------------------------------------------------------
+   * DASHBOARD DATA SOURCE
+   * ------------------------------------------------------------
+   * Dummy data for now (per current requirements: read-only,
+   * no backend calls). Kept in its own object with its own
+   * getter function so this is the ONLY place that needs to
+   * change later to wire up live Google Sheets data — the
+   * rendering functions below just consume whatever shape
+   * this returns and don't care where it came from.
+   *
+   * Underground/Overhead Tank Status and Today's Activities are still
+   * dummy data (per the current requirement to keep the Dashboard
+   * read-only with no live tank data yet). Today's Meter Reading and
+   * This Week's Meter Reading are now LIVE — fetched from the Apps
+   * Script backend (same one the forms already save to).
+   */
+  const DASHBOARD_DATA = {
+    lastUpdated: { date: '29 Jul 2026', time: '09:15 AM' }, // dummy
+    underground: {
+      domestic: { ab: 62000, c: 30000, capAB: TANK_CAPACITY.ugDomesticAB, capC: TANK_CAPACITY.ugDomesticC },
+      flushing:  { ab: 35000, c: 18000, capAB: TANK_CAPACITY.ugFlushingAB, capC: TANK_CAPACITY.ugFlushingC },
+      fireTank:  { percent: 82 }
+    },
+    overhead: {
+      domestic: {
+        a: { litres: 15000, cap: 20000 },
+        b: { litres: 12000, cap: 20000 },
+        c: { litres: 9000,  cap: 15000 }
+      },
+      flushing: {
+        a: { litres: 10000, cap: 18000 },
+        b: { litres: 9000,  cap: 15000 },
+        c: { litres: 8000,  cap: 15000 }
+      }
+    },
+    todayActivities: [
+      { label: 'Morning Meter Reading', status: 'completed' },
+      { label: 'Morning Tank Status', status: 'completed' },
+      { label: 'Afternoon Tank Status', status: 'pending' },
+      { label: 'Night Tank Status', status: 'pending' }
+    ]
+  };
+
+  /**
+   * Renders the dummy tank status + activities sections immediately —
+   * no network needed for these.
+   */
+  function getDashboardData() {
+    return Promise.resolve(DASHBOARD_DATA);
+  }
+
+  /**
+   * Loads the Dashboard: dummy tank/activity sections render right away,
+   * while Today's + This Week's Meter Reading are fetched live from the
+   * backend and rendered as soon as they arrive (with their own
+   * loading/error state, independent of the rest of the page).
+   */
+  function loadDashboard() {
+    getDashboardData().then(renderDashboard);
+
+    showMeterLoading();
+
+    fetch(API_URL + '?action=latest', { method: 'GET' })
+      .then(function (response) { return response.json(); })
+      .then(function (result) {
+        if (result.status !== 'success') {
+          throw new Error(result.message || 'Could not load meter readings.');
+        }
+        renderMeterSections(result.recentMeterReadings || []);
+      })
+      .catch(function (err) {
+        showMeterError(err.message);
+      });
+  }
+
+  function showMeterLoading() {
+    document.getElementById('dashMeterGrid').innerHTML =
+      '<div class="dash-meter-status">Loading latest reading...</div>';
+    document.getElementById('dashWeeklyBody').innerHTML =
+      '<tr><td colspan="4" class="dash-meter-status">Loading this week\'s readings...</td></tr>';
+  }
+
+  function showMeterError(message) {
+    document.getElementById('dashMeterGrid').innerHTML =
+      '<div class="dash-meter-status dash-meter-error">Could not load meter readings. ' + message + '</div>';
+    document.getElementById('dashWeeklyBody').innerHTML =
+      '<tr><td colspan="4" class="dash-meter-status dash-meter-error">Could not load meter readings.</td></tr>';
+  }
+
+  /**
+   * Renders the live meter reading sections.
+   * meterRows: array from the backend, most recent entry first.
+   */
+  function renderMeterSections(meterRows) {
+    if (!meterRows || meterRows.length === 0) {
+      document.getElementById('dashMeterGrid').innerHTML =
+        '<div class="dash-meter-status">No meter readings recorded yet.</div>';
+      document.getElementById('dashWeeklyBody').innerHTML =
+        '<tr><td colspan="4" class="dash-meter-status">No meter readings recorded yet.</td></tr>';
+      return;
+    }
+
+    // Today's Meter Reading — most recent entry.
+    const latest = meterRows[0];
+    document.getElementById('dashMeterAsOf').textContent = 'As of ' + latest.date + ', ' + latest.time;
+    const meterHtml =
+      buildMeterCard('Wing A', latest.wingA) +
+      buildMeterCard('Wing B', latest.wingB) +
+      buildMeterCard('Wing C', latest.wingC);
+    document.getElementById('dashMeterGrid').innerHTML = meterHtml;
+
+    // This Week's Meter Reading — oldest first for the table.
+    const chronological = meterRows.slice().reverse();
+    const weeklyHtml = chronological.map(function (row) {
+      return (
+        '<tr>' +
+          '<td>' + row.date + '</td>' +
+          '<td>' + row.wingA + '</td>' +
+          '<td>' + row.wingB + '</td>' +
+          '<td>' + row.wingC + '</td>' +
+        '</tr>'
+      );
+    }).join('');
+    document.getElementById('dashWeeklyBody').innerHTML = weeklyHtml;
+  }
+
+  /**
+   * Classifies a percentage level into ok / warn / danger for progress
+   * bar coloring. Thresholds: below 20% = danger, 20–40% = warn, above
+   * 40% = ok. Adjust WARN_THRESHOLD / DANGER_THRESHOLD to change these.
+   */
+  const DANGER_THRESHOLD = 20;
+  const WARN_THRESHOLD = 40;
+
+  function levelClass(percent) {
+    if (percent < DANGER_THRESHOLD) return 'danger';
+    if (percent < WARN_THRESHOLD) return 'warn';
+    return '';
+  }
+
+  /** Builds one litres/percentage row with a horizontal progress bar. */
+  function buildDashRow(label, litres, capacity) {
+    const percent = capacity ? Math.min(100, (litres / capacity) * 100) : 0;
+    const cls = levelClass(percent);
+    return (
+      '<div class="dash-row">' +
+        '<div class="dash-row-top">' +
+          '<span class="dash-row-label">' + label + '</span>' +
+          '<span class="dash-row-value">' + litres.toLocaleString() + ' L (' + Math.round(percent) + '%)</span>' +
+        '</div>' +
+        '<div class="progress-track"><div class="progress-fill ' + cls + '" style="width:' + percent + '%;"></div></div>' +
+        '<div class="dash-row-cap">Capacity: ' + capacity.toLocaleString() + ' L</div>' +
+      '</div>'
+    );
+  }
+
+  /** Builds one percentage-only row (e.g. Fire Tank) with a progress bar. */
+  function buildDashPercentRow(label, percent) {
+    const cls = levelClass(percent);
+    return (
+      '<div class="dash-row">' +
+        '<div class="dash-row-top">' +
+          '<span class="dash-row-label">' + label + '</span>' +
+          '<span class="dash-row-value">' + percent + '%</span>' +
+        '</div>' +
+        '<div class="progress-track"><div class="progress-fill ' + cls + '" style="width:' + percent + '%;"></div></div>' +
+      '</div>'
+    );
+  }
+
+  function renderDashboard(data) {
+    // Header — last updated
+    document.getElementById('dashUpdatedDate').textContent = data.lastUpdated.date;
+    document.getElementById('dashUpdatedTime').textContent = data.lastUpdated.time;
+
+    // Section 1 — Underground Tank Status (3 cards)
+    const ug = data.underground;
+    const undergroundHtml =
+      '<div class="dash-card">' +
+        '<div class="dash-card-title">Underground Domestic</div>' +
+        buildDashRow('A+B Water', ug.domestic.ab, ug.domestic.capAB) +
+        buildDashRow('C Water', ug.domestic.c, ug.domestic.capC) +
+      '</div>' +
+      '<div class="dash-card">' +
+        '<div class="dash-card-title">Underground Flushing</div>' +
+        buildDashRow('A+B Water', ug.flushing.ab, ug.flushing.capAB) +
+        buildDashRow('C Water', ug.flushing.c, ug.flushing.capC) +
+      '</div>' +
+      '<div class="dash-card">' +
+        '<div class="dash-card-title">Fire Tank</div>' +
+        buildDashPercentRow('Current Level', ug.fireTank.percent) +
+      '</div>';
+    document.getElementById('dashUndergroundGrid').innerHTML = undergroundHtml;
+
+    // Section 2 — Overhead Tank Status (2 cards)
+    const oh = data.overhead;
+    const overheadHtml =
+      '<div class="dash-card">' +
+        '<div class="dash-card-title">Overhead Domestic</div>' +
+        buildDashRow('Wing A', oh.domestic.a.litres, oh.domestic.a.cap) +
+        buildDashRow('Wing B', oh.domestic.b.litres, oh.domestic.b.cap) +
+        buildDashRow('Wing C', oh.domestic.c.litres, oh.domestic.c.cap) +
+      '</div>' +
+      '<div class="dash-card">' +
+        '<div class="dash-card-title">Overhead Flushing</div>' +
+        buildDashRow('Wing A', oh.flushing.a.litres, oh.flushing.a.cap) +
+        buildDashRow('Wing B', oh.flushing.b.litres, oh.flushing.b.cap) +
+        buildDashRow('Wing C', oh.flushing.c.litres, oh.flushing.c.cap) +
+      '</div>';
+    document.getElementById('dashOverheadGrid').innerHTML = overheadHtml;
+
+    // Section 3 (Today's + This Week's Meter Reading) is now handled
+    // separately by renderMeterSections(), fed by a live fetch — see
+    // loadDashboard(). Nothing to render here for it.
+
+    // Section 4 — Today's Activities (status badges)
+    const activitiesHtml = data.todayActivities.map(function (item) {
+      const isCompleted = item.status === 'completed';
+      const badgeText = isCompleted ? '✅ Completed' : '⏳ Pending';
+      const badgeClass = isCompleted ? 'completed' : 'pending';
+      return (
+        '<div class="dash-activity-card ' + badgeClass + '">' +
+          '<span class="dash-activity-name">' + item.label + '</span>' +
+          '<span class="activity-badge ' + badgeClass + '">' + badgeText + '</span>' +
+        '</div>'
+      );
+    }).join('');
+    document.getElementById('dashActivityList').innerHTML = activitiesHtml;
+  }
+
+  function buildMeterCard(label, valueKL) {
+    return (
+      '<div class="dash-meter-card">' +
+        '<div class="dash-meter-label">' + label + '</div>' +
+        '<div class="dash-meter-value">' + valueKL + '<span class="dash-meter-unit">KL</span></div>' +
+      '</div>'
+    );
+  }
+
+  function saveMeter(e) {
+    e.preventDefault();
+    hideMessage('meterSuccess');
+    hideMessage('meterError');
+
+    const data = {
+      date: document.getElementById('meterDate').textContent,
+      time: document.getElementById('meterTime').textContent,
+      recordedBy: document.getElementById('recordedBy').value,
+      wingA: document.getElementById('wingA').value,
+      wingB: document.getElementById('wingB').value,
+      wingC: document.getElementById('wingC').value,
+      remarks: document.getElementById('meterRemarks').value
+    };
+
+    setSaving('meterSaveBtn', true);
+
+    submitToBackend('meter', data)
+      .then(function () {
+        showMessage('meterSuccess');
+        document.getElementById('meterForm').reset();
+        stampDateTime('meterDate', 'meterTime');
+      })
+      .catch(function (err) {
+        showMessage('meterError', 'Could not save. ' + err.message);
+      })
+      .finally(function () {
+        setSaving('meterSaveBtn', false);
+      });
+
+    return false;
+  }
+
+  function saveTank(e) {
+    e.preventDefault();
+    hideMessage('tankSuccess');
+    hideMessage('tankError');
+
+    const data = {
+      date: document.getElementById('tankDate').textContent,
+      time: document.getElementById('tankTime').textContent,
+      session: document.getElementById('session').value,
+      ugDomesticAB: document.getElementById('ugDomesticAB').value,
+      ugDomesticC: document.getElementById('ugDomesticC').value,
+      ugFlushingAB: document.getElementById('ugFlushingAB').value,
+      ugFlushingC: document.getElementById('ugFlushingC').value,
+      fireTank: document.getElementById('fireTank').value,
+      ohDomA: document.getElementById('ohDomA').value,
+      ohDomB: document.getElementById('ohDomB').value,
+      ohDomC: document.getElementById('ohDomC').value,
+      ohFlushA: document.getElementById('ohFlushA').value,
+      ohFlushB: document.getElementById('ohFlushB').value,
+      ohFlushC: document.getElementById('ohFlushC').value,
+      remarks: document.getElementById('tankRemarks').value
+    };
+
+    setSaving('tankSaveBtn', true);
+
+    submitToBackend('tank', data)
+      .then(function () {
+        showMessage('tankSuccess');
+        document.getElementById('tankForm').reset();
+        stampDateTime('tankDate', 'tankTime');
+      })
+      .catch(function (err) {
+        showMessage('tankError', 'Could not save. ' + err.message);
+      })
+      .finally(function () {
+        setSaving('tankSaveBtn', false);
+      });
+
+    return false;
+  }
+
+  return {
+    navigate: navigate,
+    goHome: goHome,
+    requestStaffAccess: requestStaffAccess,
+    cancelStaffAccess: cancelStaffAccess,
+    checkStaffPin: checkStaffPin,
+    saveMeter: saveMeter,
+    saveTank: saveTank,
+    populateStaffNames: populateStaffNames,
+    loadDashboard: loadDashboard,
+    TANK_CAPACITY: TANK_CAPACITY
+  };
+
+})();
+
+App.populateStaffNames();
+
+// Allow pressing Enter in the PIN field to submit, same as clicking Unlock.
+document.getElementById('pinInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    App.checkStaffPin();
+  }
+});
+</script>
+
+</body>
+</html>
