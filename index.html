@@ -19,7 +19,7 @@
     --card:#0c2e3d;
     --success:#34d399;
     --success-bg:rgba(52,211,153,0.14);
-    --radius:8px;
+    --radius:10px;
   }
 
   *{box-sizing:border-box;}
@@ -36,20 +36,37 @@
     color:#eafcff;
     padding:16px 20px;
     display:flex;
+    flex-direction:column;
     align-items:center;
-    gap:12px;
+    justify-content:center;
+    text-align:center;
+    gap:2px;
+    position:relative;
     border-bottom:2px solid var(--blue);
     box-shadow:0 2px 16px rgba(34,211,238,0.25);
   }
+  header .trident{
+    display:block;
+    color:var(--gold);
+    font-size:1.5rem;
+    margin-bottom:2px;
+  }
   header h1{
-    font-size:1.05rem;
     margin:0;
     font-weight:700;
     letter-spacing:0.02em;
   }
-  header .trident{
-    color:var(--gold);
-    font-size:1.2rem;
+  header h1 .title-line-1{
+    display:block;
+    font-size:1.05rem;
+    font-weight:700;
+  }
+  header h1 .title-line-2{
+    display:block;
+    font-size:0.78rem;
+    font-weight:500;
+    color:rgba(234,252,255,0.75);
+    margin-top:2px;
   }
   #backBtn{
     background:rgba(34,211,238,0.12);
@@ -60,6 +77,10 @@
     font-size:0.9rem;
     cursor:pointer;
     display:none;
+    position:absolute;
+    left:20px;
+    top:50%;
+    transform:translateY(-50%);
   }
   #backBtn:active{background:rgba(34,211,238,0.25);}
 
@@ -308,7 +329,7 @@
   .dash-header{
     background:linear-gradient(135deg, var(--blue-light), #ffffff);
     border:1px solid var(--border);
-    border-radius:12px;
+    border-radius:var(--radius);
     padding:18px;
     margin-bottom:22px;
     display:grid;
@@ -361,6 +382,17 @@
     color:var(--text);
     font-weight:600;
   }
+  .dash-session-badge{
+    background:var(--gold-light);
+    color:var(--gold);
+    border:1px solid rgba(242,184,75,0.4);
+    font-size:0.68rem;
+    font-weight:700;
+    padding:2px 9px;
+    border-radius:20px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
 
   /* Section titles specific to the Dashboard, with icons */
   .dash-section-title{
@@ -378,6 +410,79 @@
   }
   .dash-section-title:first-of-type{margin-top:0;}
   .dash-section-icon{font-size:1rem;}
+  .source-badge{
+    margin-left:auto;
+    font-size:0.65rem;
+    font-weight:700;
+    letter-spacing:0.02em;
+    padding:3px 9px;
+    border-radius:20px;
+    text-transform:uppercase;
+  }
+  .source-badge.live{
+    background:var(--success-bg);
+    color:var(--success);
+    border:1px solid rgba(52,211,153,0.35);
+  }
+  .source-badge.demo{
+    background:rgba(139,155,184,0.14);
+    color:var(--muted);
+    border:1px solid rgba(139,155,184,0.3);
+  }
+
+  /* Weekly bar chart */
+  .dash-chart-card{
+    margin-bottom:14px;
+  }
+  .chart-legend{
+    display:flex;
+    gap:16px;
+    margin-bottom:16px;
+    font-size:0.78rem;
+    color:var(--muted);
+  }
+  .legend-item{display:flex; align-items:center; gap:6px;}
+  .legend-dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .dot-a{background:var(--blue);}
+  .dot-b{background:var(--gold);}
+  .dot-c{background:var(--success);}
+
+  .bar-chart{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:6px;
+    height:160px;
+    padding-top:8px;
+  }
+  .bar-group{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    flex:1;
+    height:100%;
+  }
+  .bar-set{
+    display:flex;
+    align-items:flex-end;
+    gap:3px;
+    height:100%;
+    flex:1;
+  }
+  .bar{
+    width:8px;
+    border-radius:4px 4px 0 0;
+    min-height:2px;
+  }
+  .bar-a{background:var(--blue); box-shadow:0 0 6px rgba(34,211,238,0.5);}
+  .bar-b{background:var(--gold); box-shadow:0 0 6px rgba(242,184,75,0.5);}
+  .bar-c{background:var(--success); box-shadow:0 0 6px rgba(52,211,153,0.5);}
+  .bar-group-label{
+    font-size:0.64rem;
+    color:var(--muted);
+    margin-top:8px;
+    white-space:nowrap;
+  }
 
   /* Dashboard tank / reading cards */
   .dash-grid{
@@ -402,7 +507,7 @@
   .dash-card{
     background:var(--card);
     border:1px solid var(--border);
-    border-radius:12px;
+    border-radius:var(--radius);
     padding:18px;
     box-shadow:0 2px 8px rgba(21,101,192,0.06);
   }
@@ -461,7 +566,7 @@
   .dash-table-wrap{
     overflow-x:auto;
     border:1px solid var(--border);
-    border-radius:12px;
+    border-radius:var(--radius);
   }
   .dash-table{
     width:100%;
@@ -503,7 +608,7 @@
   .dash-meter-card{
     background:var(--card);
     border:1px solid var(--border);
-    border-radius:12px;
+    border-radius:var(--radius);
     padding:18px 14px;
     text-align:center;
     box-shadow:0 2px 8px rgba(21,101,192,0.06);
@@ -538,7 +643,7 @@
     background:var(--card);
     border:1px solid var(--border);
     border-left:4px solid var(--border);
-    border-radius:10px;
+    border-radius:var(--radius);
     padding:14px 16px;
     display:flex;
     align-items:center;
@@ -574,7 +679,7 @@
 <header>
   <button id="backBtn" onclick="App.goHome()">Back</button>
   <span class="trident">🔱</span>
-  <h1 id="headerTitle">Ariana Residency CHS Water Monitoring System</h1>
+  <h1 id="headerTitle"><span class="title-line-1">Ariana Residency CHS</span><span class="title-line-2">Water Monitoring System</span></h1>
 </header>
 
 <main>
@@ -783,7 +888,7 @@
     </form>
   </section>
 
-  <!-- DASHBOARD VIEW (read-only, dummy data — see DASHBOARD_DATA in script) -->
+  <!-- DASHBOARD VIEW (read-only, live data from Google Sheets via Apps Script) -->
   <section class="view" id="view-dashboard">
 
     <div class="dash-header">
@@ -795,20 +900,43 @@
       <div class="dash-updated-row">
         <span class="dash-updated-label">Last Updated</span>
         <span class="dash-updated-value"><span id="dashUpdatedDate"></span> · <span id="dashUpdatedTime"></span></span>
+        <span class="dash-session-badge" id="dashSessionBadge" style="display:none;"></span>
       </div>
     </div>
 
-    <div class="dash-section-title"><span class="dash-section-icon">🛢️</span>Underground Tank Status</div>
+    <div class="dash-section-title">
+      <span class="dash-section-icon">🛢️</span>Underground Tank Status
+      <span class="source-badge live">Live</span>
+    </div>
     <div class="dash-grid" id="dashUndergroundGrid"></div>
 
-    <div class="dash-section-title"><span class="dash-section-icon">🏢</span>Overhead Tank Status</div>
+    <div class="dash-section-title">
+      <span class="dash-section-icon">🏢</span>Overhead Tank Status
+      <span class="source-badge live">Live</span>
+    </div>
     <div class="dash-grid dash-grid-2" id="dashOverheadGrid"></div>
 
-    <div class="dash-section-title"><span class="dash-section-icon">📟</span>Today's Meter Reading</div>
+    <div class="dash-section-title">
+      <span class="dash-section-icon">📟</span>Today's Meter Reading
+      <span class="source-badge live">Live</span>
+    </div>
     <div class="dash-meta-line" id="dashMeterAsOf"></div>
     <div class="dash-grid" id="dashMeterGrid"></div>
 
-    <div class="dash-section-title"><span class="dash-section-icon">📅</span>This Week's Meter Reading</div>
+    <div class="dash-section-title">
+      <span class="dash-section-icon">📅</span>This Week's Meter Reading
+      <span class="source-badge live">Live</span>
+    </div>
+
+    <div class="dash-card dash-chart-card">
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot dot-a"></span>Wing A</span>
+        <span class="legend-item"><span class="legend-dot dot-b"></span>Wing B</span>
+        <span class="legend-item"><span class="legend-dot dot-c"></span>Wing C</span>
+      </div>
+      <div class="bar-chart" id="dashWeeklyChart"></div>
+    </div>
+
     <div class="dash-table-wrap">
       <table class="dash-table" id="dashWeeklyTable">
         <thead>
@@ -823,7 +951,10 @@
       </table>
     </div>
 
-    <div class="dash-section-title"><span class="dash-section-icon">✅</span>Today's Activities</div>
+    <div class="dash-section-title">
+      <span class="dash-section-icon">✅</span>Today's Activities
+      <span class="source-badge live">Live</span>
+    </div>
     <div class="dash-activity-list" id="dashActivityList"></div>
 
   </section>
@@ -874,7 +1005,7 @@ const App = (function () {
 
   // Paste the Google Apps Script Web App URL here after deployment.
   // See DEPLOYMENT_GUIDE.md for setup steps.
-  const API_URL = 'https://script.google.com/macros/s/AKfycbw7dkIV5dKLdp7OqCS5lGoNUAQ0AuAd_8QPLY4LBw1R5ZRjHqn-Da0u2K-h3cDhSDZQ/exec';
+   const API_URL = 'https://script.google.com/macros/s/AKfycbw7dkIV5dKLdp7OqCS5lGoNUAQ0AuAd_8QPLY4LBw1R5ZRjHqn-Da0u2K-h3cDhSDZQ/exec';
 
   // Tank capacities (Litres) — used for reference display now,
   // and available for future calculations (e.g. Dashboard).
@@ -888,7 +1019,7 @@ const App = (function () {
   };
 
   const titles = {
-    home:  'Ariana Residency CHS Water Monitoring System',
+    home:  '<span class="title-line-1">Ariana Residency CHS</span><span class="title-line-2">Water Monitoring System</span>',
     meter: 'Morning Meter Reading',
     tank:  'Tank Status',
     dashboard: 'Dashboard'
@@ -898,7 +1029,7 @@ const App = (function () {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + viewName).classList.add('active');
 
-    document.getElementById('headerTitle').textContent = titles[viewName];
+    document.getElementById('headerTitle').innerHTML = titles[viewName];
     document.getElementById('backBtn').style.display = (viewName === 'home') ? 'none' : 'inline-block';
 
     if (viewName === 'meter') stampDateTime('meterDate', 'meterTime');
@@ -1027,102 +1158,61 @@ const App = (function () {
 
   /**
    * ------------------------------------------------------------
-   * DASHBOARD DATA SOURCE
+   * DASHBOARD — fully live, backed by Google Sheets
    * ------------------------------------------------------------
-   * Dummy data for now (per current requirements: read-only,
-   * no backend calls). Kept in its own object with its own
-   * getter function so this is the ONLY place that needs to
-   * change later to wire up live Google Sheets data — the
-   * rendering functions below just consume whatever shape
-   * this returns and don't care where it came from.
-   *
-   * Underground/Overhead Tank Status and Today's Activities are still
-   * dummy data (per the current requirement to keep the Dashboard
-   * read-only with no live tank data yet). Today's Meter Reading and
-   * This Week's Meter Reading are now LIVE — fetched from the Apps
-   * Script backend (same one the forms already save to).
-   */
-  const DASHBOARD_DATA = {
-    lastUpdated: { date: '29 Jul 2026', time: '09:15 AM' }, // dummy
-    underground: {
-      domestic: { ab: 62000, c: 30000, capAB: TANK_CAPACITY.ugDomesticAB, capC: TANK_CAPACITY.ugDomesticC },
-      flushing:  { ab: 35000, c: 18000, capAB: TANK_CAPACITY.ugFlushingAB, capC: TANK_CAPACITY.ugFlushingC },
-      fireTank:  { percent: 82 }
-    },
-    overhead: {
-      domestic: {
-        a: { litres: 15000, cap: 20000 },
-        b: { litres: 12000, cap: 20000 },
-        c: { litres: 9000,  cap: 15000 }
-      },
-      flushing: {
-        a: { litres: 10000, cap: 18000 },
-        b: { litres: 9000,  cap: 15000 },
-        c: { litres: 8000,  cap: 15000 }
-      }
-    },
-    todayActivities: [
-      { label: 'Morning Meter Reading', status: 'completed' },
-      { label: 'Morning Tank Status', status: 'completed' },
-      { label: 'Afternoon Tank Status', status: 'pending' },
-      { label: 'Night Tank Status', status: 'pending' }
-    ]
-  };
-
-  /**
-   * Renders the dummy tank status + activities sections immediately —
-   * no network needed for these.
-   */
-  function getDashboardData() {
-    return Promise.resolve(DASHBOARD_DATA);
-  }
-
-  /**
-   * Loads the Dashboard: dummy tank/activity sections render right away,
-   * while Today's + This Week's Meter Reading are fetched live from the
-   * backend and rendered as soon as they arrive (with their own
-   * loading/error state, independent of the rest of the page).
+   * A single request to the Apps Script backend (?action=latest)
+   * returns everything the Dashboard needs: the latest Tank Status
+   * entry, the last 7 Meter Readings, and today's activity status
+   * (computed server-side from real timestamps). No dummy data.
    */
   function loadDashboard() {
-    getDashboardData().then(renderDashboard);
-
-    showMeterLoading();
+    showDashboardLoading();
 
     fetch(API_URL + '?action=latest', { method: 'GET' })
       .then(function (response) { return response.json(); })
       .then(function (result) {
         if (result.status !== 'success') {
-          throw new Error(result.message || 'Could not load meter readings.');
+          throw new Error(result.message || 'Could not load dashboard data.');
         }
-        renderMeterSections(result.recentMeterReadings || []);
+        renderDashboard(result);
       })
       .catch(function (err) {
-        showMeterError(err.message);
+        showDashboardError(err.message);
       });
   }
 
-  function showMeterLoading() {
-    document.getElementById('dashMeterGrid').innerHTML =
-      '<div class="dash-meter-status">Loading latest reading...</div>';
+  function showDashboardLoading() {
+    const loadingMsg = '<div class="dash-meter-status">Loading...</div>';
+    document.getElementById('dashUndergroundGrid').innerHTML = loadingMsg;
+    document.getElementById('dashOverheadGrid').innerHTML = loadingMsg;
+    document.getElementById('dashMeterGrid').innerHTML = loadingMsg;
+    document.getElementById('dashMeterAsOf').textContent = '';
+    document.getElementById('dashWeeklyChart').innerHTML = '';
     document.getElementById('dashWeeklyBody').innerHTML =
-      '<tr><td colspan="4" class="dash-meter-status">Loading this week\'s readings...</td></tr>';
+      '<tr><td colspan="4" class="dash-meter-status">Loading...</td></tr>';
+    document.getElementById('dashActivityList').innerHTML = loadingMsg;
   }
 
-  function showMeterError(message) {
-    document.getElementById('dashMeterGrid').innerHTML =
-      '<div class="dash-meter-status dash-meter-error">Could not load meter readings. ' + message + '</div>';
+  function showDashboardError(message) {
+    const errorMsg = '<div class="dash-meter-status dash-meter-error">Could not load data. ' + message + '</div>';
+    document.getElementById('dashUndergroundGrid').innerHTML = errorMsg;
+    document.getElementById('dashOverheadGrid').innerHTML = errorMsg;
+    document.getElementById('dashMeterGrid').innerHTML = errorMsg;
+    document.getElementById('dashWeeklyChart').innerHTML = '';
     document.getElementById('dashWeeklyBody').innerHTML =
-      '<tr><td colspan="4" class="dash-meter-status dash-meter-error">Could not load meter readings.</td></tr>';
+      '<tr><td colspan="4" class="dash-meter-status dash-meter-error">Could not load data.</td></tr>';
+    document.getElementById('dashActivityList').innerHTML = errorMsg;
   }
 
   /**
-   * Renders the live meter reading sections.
+   * Renders the meter reading sections (Today's + This Week's).
    * meterRows: array from the backend, most recent entry first.
    */
   function renderMeterSections(meterRows) {
     if (!meterRows || meterRows.length === 0) {
       document.getElementById('dashMeterGrid').innerHTML =
         '<div class="dash-meter-status">No meter readings recorded yet.</div>';
+      document.getElementById('dashWeeklyChart').innerHTML = '';
       document.getElementById('dashWeeklyBody').innerHTML =
         '<tr><td colspan="4" class="dash-meter-status">No meter readings recorded yet.</td></tr>';
       return;
@@ -1137,8 +1227,11 @@ const App = (function () {
       buildMeterCard('Wing C', latest.wingC);
     document.getElementById('dashMeterGrid').innerHTML = meterHtml;
 
-    // This Week's Meter Reading — oldest first for the table.
+    // This Week's Meter Reading — oldest first for the table and chart.
     const chronological = meterRows.slice().reverse();
+
+    renderWeeklyChart(chronological);
+
     const weeklyHtml = chronological.map(function (row) {
       return (
         '<tr>' +
@@ -1151,6 +1244,40 @@ const App = (function () {
     }).join('');
     document.getElementById('dashWeeklyBody').innerHTML = weeklyHtml;
   }
+
+  /**
+   * Renders a simple CSS-only grouped bar chart (Wing A/B/C per day)
+   * for This Week's Meter Reading. No charting library — just divs
+   * sized proportionally to the highest value in the data set.
+   */
+  function renderWeeklyChart(rows) {
+    const allValues = [];
+    rows.forEach(function (r) {
+      allValues.push(Number(r.wingA), Number(r.wingB), Number(r.wingC));
+    });
+    const maxValue = Math.max.apply(null, allValues.concat([1])); // avoid divide-by-zero
+
+    const html = rows.map(function (row) {
+      const hA = Math.max(2, (Number(row.wingA) / maxValue) * 100);
+      const hB = Math.max(2, (Number(row.wingB) / maxValue) * 100);
+      const hC = Math.max(2, (Number(row.wingC) / maxValue) * 100);
+      // Shorten date for the axis label (e.g. "29 Jul" from "29 Jul 2026").
+      const shortDate = String(row.date).replace(/,?\s*\d{4}$/, '');
+      return (
+        '<div class="bar-group">' +
+          '<div class="bar-set">' +
+            '<div class="bar bar-a" style="height:' + hA + '%;" title="Wing A: ' + row.wingA + ' KL"></div>' +
+            '<div class="bar bar-b" style="height:' + hB + '%;" title="Wing B: ' + row.wingB + ' KL"></div>' +
+            '<div class="bar bar-c" style="height:' + hC + '%;" title="Wing C: ' + row.wingC + ' KL"></div>' +
+          '</div>' +
+          '<div class="bar-group-label">' + shortDate + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    document.getElementById('dashWeeklyChart').innerHTML = html;
+  }
+
 
   /**
    * Classifies a percentage level into ok / warn / danger for progress
@@ -1166,7 +1293,7 @@ const App = (function () {
     return '';
   }
 
-  /** Builds one litres/percentage row with a horizontal progress bar. */
+  /** Builds one litres/percentage row with a horizontal progress bar. Used for Underground tanks, which are recorded in litres. */
   function buildDashRow(label, litres, capacity) {
     const percent = capacity ? Math.min(100, (litres / capacity) * 100) : 0;
     const cls = levelClass(percent);
@@ -1174,7 +1301,7 @@ const App = (function () {
       '<div class="dash-row">' +
         '<div class="dash-row-top">' +
           '<span class="dash-row-label">' + label + '</span>' +
-          '<span class="dash-row-value">' + litres.toLocaleString() + ' L (' + Math.round(percent) + '%)</span>' +
+          '<span class="dash-row-value">' + Number(litres).toLocaleString() + ' L (' + Math.round(percent) + '%)</span>' +
         '</div>' +
         '<div class="progress-track"><div class="progress-fill ' + cls + '" style="width:' + percent + '%;"></div></div>' +
         '<div class="dash-row-cap">Capacity: ' + capacity.toLocaleString() + ' L</div>' +
@@ -1182,7 +1309,7 @@ const App = (function () {
     );
   }
 
-  /** Builds one percentage-only row (e.g. Fire Tank) with a progress bar. */
+  /** Builds one percentage-only row with a progress bar. Used for Fire Tank and Overhead tanks, which are recorded directly as %. */
   function buildDashPercentRow(label, percent) {
     const cls = levelClass(percent);
     return (
@@ -1196,56 +1323,80 @@ const App = (function () {
     );
   }
 
-  function renderDashboard(data) {
-    // Header — last updated
-    document.getElementById('dashUpdatedDate').textContent = data.lastUpdated.date;
-    document.getElementById('dashUpdatedTime').textContent = data.lastUpdated.time;
+  function renderDashboard(result) {
+    const tank = result.latestTank;
+
+    // Header — "Last Updated" reflects the actual save time of the
+    // Tank Status entry being shown below (whichever was the most
+    // recently inserted row — if 3 entries were saved today, this is
+    // the last of those 3), not just when the Dashboard page loaded.
+    if (tank) {
+      document.getElementById('dashUpdatedDate').textContent = tank.date;
+      document.getElementById('dashUpdatedTime').textContent = tank.time;
+      const sessionBadge = document.getElementById('dashSessionBadge');
+      sessionBadge.textContent = tank.session + ' Session';
+      sessionBadge.style.display = 'inline-block';
+    } else {
+      document.getElementById('dashUpdatedDate').textContent = 'No data yet';
+      document.getElementById('dashUpdatedTime').textContent = '';
+      document.getElementById('dashSessionBadge').style.display = 'none';
+    }
 
     // Section 1 — Underground Tank Status (3 cards)
-    const ug = data.underground;
-    const undergroundHtml =
-      '<div class="dash-card">' +
-        '<div class="dash-card-title">Underground Domestic</div>' +
-        buildDashRow('A+B Water', ug.domestic.ab, ug.domestic.capAB) +
-        buildDashRow('C Water', ug.domestic.c, ug.domestic.capC) +
-      '</div>' +
-      '<div class="dash-card">' +
-        '<div class="dash-card-title">Underground Flushing</div>' +
-        buildDashRow('A+B Water', ug.flushing.ab, ug.flushing.capAB) +
-        buildDashRow('C Water', ug.flushing.c, ug.flushing.capC) +
-      '</div>' +
-      '<div class="dash-card">' +
-        '<div class="dash-card-title">Fire Tank</div>' +
-        buildDashPercentRow('Current Level', ug.fireTank.percent) +
-      '</div>';
-    document.getElementById('dashUndergroundGrid').innerHTML = undergroundHtml;
+    if (!tank) {
+      const noDataMsg = '<div class="dash-meter-status">No tank status recorded yet.</div>';
+      document.getElementById('dashUndergroundGrid').innerHTML = noDataMsg;
+      document.getElementById('dashOverheadGrid').innerHTML = noDataMsg;
+    } else {
+      const undergroundHtml =
+        '<div class="dash-card">' +
+          '<div class="dash-card-title">Underground Domestic</div>' +
+          buildDashRow('A+B Water', tank.ugDomesticAB, TANK_CAPACITY.ugDomesticAB) +
+          buildDashRow('C Water', tank.ugDomesticC, TANK_CAPACITY.ugDomesticC) +
+        '</div>' +
+        '<div class="dash-card">' +
+          '<div class="dash-card-title">Underground Flushing</div>' +
+          buildDashRow('A+B Water', tank.ugFlushingAB, TANK_CAPACITY.ugFlushingAB) +
+          buildDashRow('C Water', tank.ugFlushingC, TANK_CAPACITY.ugFlushingC) +
+        '</div>' +
+        '<div class="dash-card">' +
+          '<div class="dash-card-title">Fire Tank</div>' +
+          buildDashPercentRow('Current Level', tank.fireTank) +
+        '</div>';
+      document.getElementById('dashUndergroundGrid').innerHTML = undergroundHtml;
 
-    // Section 2 — Overhead Tank Status (2 cards)
-    const oh = data.overhead;
-    const overheadHtml =
-      '<div class="dash-card">' +
-        '<div class="dash-card-title">Overhead Domestic</div>' +
-        buildDashRow('Wing A', oh.domestic.a.litres, oh.domestic.a.cap) +
-        buildDashRow('Wing B', oh.domestic.b.litres, oh.domestic.b.cap) +
-        buildDashRow('Wing C', oh.domestic.c.litres, oh.domestic.c.cap) +
-      '</div>' +
-      '<div class="dash-card">' +
-        '<div class="dash-card-title">Overhead Flushing</div>' +
-        buildDashRow('Wing A', oh.flushing.a.litres, oh.flushing.a.cap) +
-        buildDashRow('Wing B', oh.flushing.b.litres, oh.flushing.b.cap) +
-        buildDashRow('Wing C', oh.flushing.c.litres, oh.flushing.c.cap) +
-      '</div>';
-    document.getElementById('dashOverheadGrid').innerHTML = overheadHtml;
+      // Section 2 — Overhead Tank Status (2 cards). Recorded directly
+      // as percentages on the form, so no litres/capacity conversion.
+      const overheadHtml =
+        '<div class="dash-card">' +
+          '<div class="dash-card-title">Overhead Domestic</div>' +
+          buildDashPercentRow('Wing A', tank.ohDomA) +
+          buildDashPercentRow('Wing B', tank.ohDomB) +
+          buildDashPercentRow('Wing C', tank.ohDomC) +
+        '</div>' +
+        '<div class="dash-card">' +
+          '<div class="dash-card-title">Overhead Flushing</div>' +
+          buildDashPercentRow('Wing A', tank.ohFlushA) +
+          buildDashPercentRow('Wing B', tank.ohFlushB) +
+          buildDashPercentRow('Wing C', tank.ohFlushC) +
+        '</div>';
+      document.getElementById('dashOverheadGrid').innerHTML = overheadHtml;
+    }
 
-    // Section 3 (Today's + This Week's Meter Reading) is now handled
-    // separately by renderMeterSections(), fed by a live fetch — see
-    // loadDashboard(). Nothing to render here for it.
+    // Section 3 — Today's + This Week's Meter Reading
+    renderMeterSections(result.recentMeterReadings || []);
 
-    // Section 4 — Today's Activities (status badges)
-    const activitiesHtml = data.todayActivities.map(function (item) {
-      const isCompleted = item.status === 'completed';
-      const badgeText = isCompleted ? '✅ Completed' : '⏳ Pending';
-      const badgeClass = isCompleted ? 'completed' : 'pending';
+    // Section 4 — Today's Activities, computed live from real timestamps
+    const act = result.todayActivities || {};
+    const activityItems = [
+      { label: 'Morning Meter Reading', done: !!act.meterReadingDone },
+      { label: 'Morning Tank Status', done: !!act.morningTankDone },
+      { label: 'Afternoon Tank Status', done: !!act.afternoonTankDone },
+      { label: 'Night Tank Status', done: !!act.nightTankDone }
+    ];
+    const activitiesHtml = activityItems.map(function (item) {
+      const badgeText = item.done ? '✅ Completed' : '⏳ Pending';
+      const badgeClass = item.done ? 'completed' : 'pending';
       return (
         '<div class="dash-activity-card ' + badgeClass + '">' +
           '<span class="dash-activity-name">' + item.label + '</span>' +
