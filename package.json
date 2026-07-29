@@ -1,0 +1,7 @@
+{
+  "name": "duxos-water-monitoring",
+  "private": true,
+  "scripts": {
+    "start": "npx serve . -l $PORT"
+  }
+}
