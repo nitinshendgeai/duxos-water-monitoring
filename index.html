@@ -6,20 +6,17 @@
 <title>Ariana Residency CHS Water Monitoring System</title>
 <style>
   :root{
-    --blue:#22d3ee;
-    --blue-dark:#7dd3fc;
-    --blue-light:rgba(34,211,238,0.14);
-    --gold:#f2b84b;
-    --gold-dark:#c8922b;
-    --gold-light:rgba(242,184,75,0.16);
-    --text:#e7f6fb;
-    --muted:#6f93a0;
-    --border:#16394a;
-    --bg:#031b24;
-    --card:#0c2e3d;
-    --success:#34d399;
-    --success-bg:rgba(52,211,153,0.14);
-    --radius:10px;
+    --blue:#6366f1;
+    --blue-dark:#a5b4fc;
+    --blue-light:rgba(99,102,241,0.14);
+    --text:#e8e9ee;
+    --muted:#8b8d9c;
+    --border:#232433;
+    --bg:#0a0a10;
+    --card:#15151f;
+    --success:#22c55e;
+    --success-bg:rgba(34,197,94,0.14);
+    --radius:12px;
   }
 
   *{box-sizing:border-box;}
@@ -32,46 +29,63 @@
   }
 
   header{
-    background:linear-gradient(135deg, #062633, #0a4a5c);
-    color:#eafcff;
-    padding:16px 20px;
+    background:var(--card);
+    color:var(--text);
+    padding:18px 20px;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     text-align:center;
-    gap:2px;
+    gap:8px;
     position:relative;
-    border-bottom:2px solid var(--blue);
-    box-shadow:0 2px 16px rgba(34,211,238,0.25);
+    border-bottom:1px solid var(--border);
   }
-  header .trident{
-    display:block;
-    color:var(--gold);
-    font-size:1.5rem;
-    margin-bottom:2px;
+  header::after{
+    content:"";
+    position:absolute;
+    bottom:-1px;
+    left:0;
+    width:100%;
+    height:2px;
+    background:var(--blue);
+  }
+  .logo-badge{
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    background:var(--blue);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0.85rem;
+    font-weight:800;
+    letter-spacing:0.01em;
+    color:#0a0a10;
+    box-shadow:0 0 18px rgba(99,102,241,0.4);
   }
   header h1{
     margin:0;
     font-weight:700;
-    letter-spacing:0.02em;
+    letter-spacing:0.01em;
   }
   header h1 .title-line-1{
     display:block;
-    font-size:1.05rem;
+    font-size:1.02rem;
     font-weight:700;
+    color:var(--text);
   }
   header h1 .title-line-2{
     display:block;
-    font-size:0.78rem;
+    font-size:0.76rem;
     font-weight:500;
-    color:rgba(234,252,255,0.75);
+    color:var(--muted);
     margin-top:2px;
   }
   #backBtn{
-    background:rgba(34,211,238,0.12);
-    border:1px solid rgba(34,211,238,0.4);
-    color:#eafcff;
+    background:var(--blue-light);
+    border:1px solid rgba(99,102,241,0.4);
+    color:var(--blue-dark);
     padding:8px 14px;
     border-radius:var(--radius);
     font-size:0.9rem;
@@ -82,7 +96,7 @@
     top:50%;
     transform:translateY(-50%);
   }
-  #backBtn:active{background:rgba(34,211,238,0.25);}
+  #backBtn:active{background:rgba(99,102,241,0.25);}
 
   main{
     max-width:600px;
@@ -128,7 +142,17 @@
     width:100%;
   }
   .home-card:active{background:var(--blue-light);}
-  .home-card .emoji{font-size:1.6rem; flex-shrink:0;}
+  .home-card .emoji{
+    font-size:1.3rem;
+    flex-shrink:0;
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:11px;
+    background:var(--blue-light);
+  }
   .home-card .title{font-weight:600; color:var(--text);}
   .home-card .desc{font-size:0.82rem; color:var(--muted); margin-top:2px;}
 
@@ -239,9 +263,9 @@
     cursor:pointer;
   }
   .btn-primary{
-    background:linear-gradient(135deg, var(--blue), #0891b2);
-    color:#04151c;
-    box-shadow:0 0 14px rgba(34,211,238,0.35);
+    background:var(--blue);
+    color:#0a0a10;
+    box-shadow:0 0 14px rgba(99,102,241,0.35);
   }
   .btn-primary:active{background:var(--blue-dark);}
   .btn-secondary{
@@ -267,9 +291,9 @@
 
   /* Staff badge on home cards */
   .staff-badge{
-    background:var(--gold-light);
-    color:var(--gold);
-    border:1px solid rgba(242,184,75,0.4);
+    background:var(--blue-light);
+    color:var(--blue);
+    border:1px solid rgba(34,211,238,0.4);
   }
 
   /* Staff PIN overlay */
@@ -286,8 +310,8 @@
   .pin-overlay.show{display:flex;}
   .pin-box{
     background:var(--card);
-    border:1px solid var(--gold);
-    box-shadow:0 0 24px rgba(242,184,75,0.2);
+    border:1px solid var(--blue);
+    box-shadow:0 0 24px rgba(34,211,238,0.2);
     border-radius:var(--radius);
     padding:22px;
     width:100%;
@@ -327,29 +351,12 @@
 
   /* Dashboard header */
   .dash-header{
-    background:linear-gradient(135deg, var(--blue-light), #ffffff);
+    background:var(--card);
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:18px;
     margin-bottom:22px;
-    display:grid;
-    grid-template-columns:auto 1fr;
-    gap:12px 14px;
   }
-  .dash-header-icon{
-    width:42px;
-    height:42px;
-    border-radius:11px;
-    background:linear-gradient(135deg, var(--blue), #0a4a5c);
-    border:1px solid var(--gold);
-    color:var(--gold);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:1.3rem;
-    grid-row:1;
-  }
-  .dash-header-text{grid-row:1;}
   .dash-header-title{
     font-size:1.05rem;
     font-weight:700;
@@ -362,7 +369,6 @@
     margin-top:2px;
   }
   .dash-updated-row{
-    grid-column:1 / -1;
     padding-top:12px;
     border-top:1px solid rgba(21,101,192,0.12);
     font-size:0.8rem;
@@ -383,9 +389,9 @@
     font-weight:600;
   }
   .dash-session-badge{
-    background:var(--gold-light);
-    color:var(--gold);
-    border:1px solid rgba(242,184,75,0.4);
+    background:var(--blue-light);
+    color:var(--blue);
+    border:1px solid rgba(34,211,238,0.4);
     font-size:0.68rem;
     font-weight:700;
     padding:2px 9px;
@@ -444,7 +450,7 @@
   .legend-item{display:flex; align-items:center; gap:6px;}
   .legend-dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .dot-a{background:var(--blue);}
-  .dot-b{background:var(--gold);}
+  .dot-b{background:var(--blue);}
   .dot-c{background:var(--success);}
 
   .bar-chart{
@@ -474,8 +480,8 @@
     border-radius:4px 4px 0 0;
     min-height:2px;
   }
-  .bar-a{background:var(--blue); box-shadow:0 0 6px rgba(34,211,238,0.5);}
-  .bar-b{background:var(--gold); box-shadow:0 0 6px rgba(242,184,75,0.5);}
+  .bar-a{background:var(--blue); box-shadow:0 0 6px rgba(99,102,241,0.5);}
+  .bar-b{background:var(--blue); box-shadow:0 0 6px rgba(99,102,241,0.5);}
   .bar-c{background:var(--success); box-shadow:0 0 6px rgba(52,211,153,0.5);}
   .bar-group-label{
     font-size:0.64rem;
@@ -557,7 +563,7 @@
     height:100%;
     border-radius:20px;
     background:var(--blue);
-    box-shadow:0 0 6px rgba(34,211,238,0.6);
+    box-shadow:0 0 6px rgba(99,102,241,0.6);
   }
   .progress-fill.warn{background:#f0a500;}
   .progress-fill.danger{background:#d32f2f;}
@@ -678,7 +684,7 @@
 
 <header>
   <button id="backBtn" onclick="App.goHome()">Back</button>
-  <span class="trident">🔱</span>
+  <div class="logo-badge">AR</div>
   <h1 id="headerTitle"><span class="title-line-1">Ariana Residency CHS</span><span class="title-line-2">Water Monitoring System</span></h1>
 </header>
 
@@ -892,7 +898,6 @@
   <section class="view" id="view-dashboard">
 
     <div class="dash-header">
-      <div class="dash-header-icon">🔱</div>
       <div class="dash-header-text">
         <div class="dash-header-title">Water Monitoring Dashboard</div>
         <div class="dash-header-sub">Ariana Residency CHS Ltd.</div>
@@ -1182,6 +1187,10 @@ const App = (function () {
   }
 
   function showDashboardLoading() {
+    document.getElementById('dashUpdatedDate').textContent = 'Loading...';
+    document.getElementById('dashUpdatedTime').textContent = '';
+    document.getElementById('dashSessionBadge').style.display = 'none';
+
     const loadingMsg = '<div class="dash-meter-status">Loading...</div>';
     document.getElementById('dashUndergroundGrid').innerHTML = loadingMsg;
     document.getElementById('dashOverheadGrid').innerHTML = loadingMsg;
@@ -1194,6 +1203,10 @@ const App = (function () {
   }
 
   function showDashboardError(message) {
+    document.getElementById('dashUpdatedDate').textContent = 'Could not load';
+    document.getElementById('dashUpdatedTime').textContent = '';
+    document.getElementById('dashSessionBadge').style.display = 'none';
+
     const errorMsg = '<div class="dash-meter-status dash-meter-error">Could not load data. ' + message + '</div>';
     document.getElementById('dashUndergroundGrid').innerHTML = errorMsg;
     document.getElementById('dashOverheadGrid').innerHTML = errorMsg;
