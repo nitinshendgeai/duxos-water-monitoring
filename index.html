@@ -608,7 +608,15 @@
     font-size:0.85rem;
     padding:16px 8px;
   }
-  .dash-meter-error{color:#ff8a80;}
+  .dash-meter-error{
+    color:#ff8a80;
+    white-space:pre-wrap;
+    word-break:break-word;
+    text-align:left;
+    font-family:monospace;
+    font-size:0.75rem;
+    line-height:1.5;
+  }
 
   /* Today's Meter Reading cards */
   .dash-meter-card{
@@ -742,10 +750,9 @@
         <div class="label">Date</div>
         <div class="value" id="meterDate">--</div>
       </div>
-      <div class="datetime-box">
-        <div class="label">Time</div>
-        <div class="value" id="meterTime">--</div>
-      </div>
+      <!-- Time is still recorded in the background (needed for the sheet)
+           but not shown here, per request to display dates only. -->
+      <div id="meterTime" style="display:none;">--</div>
     </div>
 
     <form id="meterForm" onsubmit="return App.saveMeter(event)">
@@ -1121,9 +1128,46 @@ const App = (function () {
   function stampDateTime(dateElId, timeElId) {
     const now = new Date();
     document.getElementById(dateElId).textContent =
-      now.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+      now.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
     document.getElementById(timeElId).textContent =
-      now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  }
+
+  /**
+   * ------------------------------------------------------------
+   * FRONTEND-ONLY FIX for the Google Sheets date/time bug
+   * ------------------------------------------------------------
+   * Google Sheets sometimes auto-converts a typed date/time into a
+   * real Date value, which then reaches the browser as a raw ISO
+   * timestamp (e.g. "2026-08-01T18:30:00.000Z") instead of clean text.
+   * This depends on getting a Code.gs fix correctly deployed, which
+   * has been unreliable — so these two functions clean it up here in
+   * the browser instead, independent of whatever the backend sends.
+   *
+   * If the backend is ALSO fixed and sends clean text already (e.g.
+   * "2 Aug 2026"), these functions detect that it's not a raw ISO
+   * timestamp and pass it through unchanged — safe either way.
+   */
+  const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+
+  function smartFormatDate(value) {
+    if (typeof value === 'string' && ISO_TIMESTAMP_PATTERN.test(value)) {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    }
+    return value;
+  }
+
+  function smartFormatTime(value) {
+    if (typeof value === 'string' && ISO_TIMESTAMP_PATTERN.test(value)) {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      }
+    }
+    return value;
   }
 
   function showMessage(id, text) {
@@ -1173,9 +1217,36 @@ const App = (function () {
   function loadDashboard() {
     showDashboardLoading();
 
+    let httpStatus = '';
+    let wasRedirected = false;
+    let responseUrl = '';
+
     fetch(API_URL + '?action=latest', { method: 'GET' })
-      .then(function (response) { return response.json(); })
-      .then(function (result) {
+      .then(function (response) {
+        httpStatus = response.status + ' ' + response.statusText;
+        wasRedirected = response.redirected;
+        responseUrl = response.url;
+        return response.text();
+      })
+      .then(function (rawText) {
+        let result;
+        try {
+          result = JSON.parse(rawText);
+        } catch (parseErr) {
+          // The server sent back something that isn't JSON at all (an
+          // HTML error page, a login prompt, an empty body, etc).
+          // Instead of a cryptic parse error, show everything we know
+          // about the actual response so the real cause is visible
+          // directly on screen, no separate testing needed.
+          const snippet = rawText.substring(0, 300).trim();
+          throw new Error(
+            'The server returned unexpected content instead of data.\n' +
+            'HTTP status: ' + httpStatus + '\n' +
+            'Redirected: ' + wasRedirected + (wasRedirected ? ' (landed on: ' + responseUrl + ')' : '') + '\n' +
+            'Body length: ' + rawText.length + ' characters\n' +
+            'Raw response: ' + (snippet || '(completely empty body)')
+          );
+        }
         if (result.status !== 'success') {
           throw new Error(result.message || 'Could not load dashboard data.');
         }
@@ -1202,12 +1273,19 @@ const App = (function () {
     document.getElementById('dashActivityList').innerHTML = loadingMsg;
   }
 
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   function showDashboardError(message) {
     document.getElementById('dashUpdatedDate').textContent = 'Could not load';
     document.getElementById('dashUpdatedTime').textContent = '';
     document.getElementById('dashSessionBadge').style.display = 'none';
 
-    const errorMsg = '<div class="dash-meter-status dash-meter-error">Could not load data. ' + message + '</div>';
+    const safeMessage = escapeHtml(message);
+    const errorMsg = '<div class="dash-meter-status dash-meter-error">Could not load data. ' + safeMessage + '</div>';
     document.getElementById('dashUndergroundGrid').innerHTML = errorMsg;
     document.getElementById('dashOverheadGrid').innerHTML = errorMsg;
     document.getElementById('dashMeterGrid').innerHTML = errorMsg;
@@ -1233,7 +1311,8 @@ const App = (function () {
 
     // Today's Meter Reading — most recent entry.
     const latest = meterRows[0];
-    document.getElementById('dashMeterAsOf').textContent = 'As of ' + latest.date + ', ' + latest.time;
+    document.getElementById('dashMeterAsOf').textContent =
+      'As of ' + smartFormatDate(latest.date);
     const meterHtml =
       buildMeterCard('Wing A', latest.wingA) +
       buildMeterCard('Wing B', latest.wingB) +
@@ -1248,7 +1327,7 @@ const App = (function () {
     const weeklyHtml = chronological.map(function (row) {
       return (
         '<tr>' +
-          '<td>' + row.date + '</td>' +
+          '<td>' + smartFormatDate(row.date) + '</td>' +
           '<td>' + row.wingA + '</td>' +
           '<td>' + row.wingB + '</td>' +
           '<td>' + row.wingC + '</td>' +
@@ -1274,8 +1353,10 @@ const App = (function () {
       const hA = Math.max(2, (Number(row.wingA) / maxValue) * 100);
       const hB = Math.max(2, (Number(row.wingB) / maxValue) * 100);
       const hC = Math.max(2, (Number(row.wingC) / maxValue) * 100);
-      // Shorten date for the axis label (e.g. "29 Jul" from "29 Jul 2026").
-      const shortDate = String(row.date).replace(/,?\s*\d{4}$/, '');
+      // Clean the date first (in case it's a raw ISO timestamp), then
+      // shorten it for the axis label (e.g. "29 Jul" from "29 Jul 2026").
+      const cleanDate = smartFormatDate(row.date);
+      const shortDate = String(cleanDate).replace(/,?\s*\d{4}$/, '');
       return (
         '<div class="bar-group">' +
           '<div class="bar-set">' +
@@ -1344,8 +1425,8 @@ const App = (function () {
     // recently inserted row — if 3 entries were saved today, this is
     // the last of those 3), not just when the Dashboard page loaded.
     if (tank) {
-      document.getElementById('dashUpdatedDate').textContent = tank.date;
-      document.getElementById('dashUpdatedTime').textContent = tank.time;
+      document.getElementById('dashUpdatedDate').textContent = smartFormatDate(tank.date);
+      document.getElementById('dashUpdatedTime').textContent = smartFormatTime(tank.time);
       const sessionBadge = document.getElementById('dashSessionBadge');
       sessionBadge.textContent = tank.session + ' Session';
       sessionBadge.style.display = 'inline-block';
