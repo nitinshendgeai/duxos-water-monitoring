@@ -4,6 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ariana Residency CHS Water Monitoring System</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  /* ============ System switcher (Water Monitoring / Attendance) ============ */
+  .sys-switch{
+    display:flex; gap:8px; padding:14px 20px; background:#0a0a10; border-bottom:1px solid #232433;
+    position:sticky; top:0; z-index:200;
+  }
+  .sys-btn{
+    font-family:-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    font-size:0.85rem; font-weight:600; padding:9px 16px; border-radius:10px; border:1px solid #232433;
+    background:#15151f; color:#8b8d9c; cursor:pointer;
+  }
+  .sys-btn.active{ background:rgba(99,102,241,0.14); color:#a5b4fc; border-color:#6366f1; }
+  .app-view{ display:none; }
+  .app-view.active{ display:block; }
+</style>
 <style>
   :root{
     --blue:#6366f1;
@@ -686,9 +703,107 @@
     background:rgba(240,165,0,0.16);
     color:#ffcc66;
   }
+
+  /* ============ Attendance module (scoped under #app-attendance) ============ */
+#app-attendance{
+
+  --att-bg:#12151a;
+  --att-panel:#1a1e24;
+  --att-panel-2:#20252c;
+  --att-border:#2b313a;
+  --att-border-soft:#242a31;
+  --att-text:#e9ebee;
+  --att-text-muted:#8b929c;
+  --att-text-dim:#5b6270;
+  --att-green:#34d399;
+  --att-amber:#f5b942;
+  --att-red:#ef5b5b;
+  --att-wingA:#5b9ef5;
+  --att-wingB:#b58bfa;
+  --att-wingC:#f06fa5;
+  --att-office:#e0a63c;
+  --att-gym:#8bd450;
+  --att-font-head:'Space Grotesk',sans-serif;
+  --att-font-body:'IBM Plex Sans',sans-serif;
+  --att-font-mono:'JetBrains Mono',monospace;
+
+
+  background:var(--att-bg);
+  color:var(--att-text);
+  font-family:var(--att-font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+
+  min-height:60vh;
+}
+#app-attendance *{box-sizing:border-box;}
+#app-attendance #app{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 20px 60px;}#app-attendance /* ---------- Top bar ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 0 16px; border-bottom:1px solid var(--att-border); margin-bottom:24px;
+  flex-wrap:wrap; gap:12px;
+}#app-attendance .brand{display:flex; align-items:center; gap:10px;}#app-attendance .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--att-green); box-shadow:0 0 0 3px rgba(52,211,153,0.15); flex-shrink:0;}#app-attendance .brand-dot.off{background:var(--att-red); box-shadow:0 0 0 3px rgba(239,91,91,0.15);}#app-attendance .brand h1{font-family:var(--att-font-head); font-size:16px; font-weight:600; letter-spacing:0.02em; margin:0; text-transform:uppercase;}#app-attendance .brand span.sub{display:block; font-size:11px; color:var(--att-text-dim); font-family:var(--att-font-mono); letter-spacing:0.03em; margin-top:2px;}#app-attendance .tabs{display:flex; gap:4px; background:var(--att-panel); border:1px solid var(--att-border); border-radius:8px; padding:3px;}#app-attendance .tab-btn{
+  font-family:var(--att-font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--att-text-muted); background:transparent; border:none; padding:8px 14px; border-radius:6px;
+  cursor:pointer; transition:all .15s ease;
+}#app-attendance .tab-btn.active{background:var(--att-panel-2); color:var(--att-text); box-shadow:inset 0 0 0 1px var(--att-border);}#app-attendance .clock{font-family:var(--att-font-mono); font-size:12px; color:var(--att-text-dim); text-align:right;}#app-attendance .clock b{color:var(--att-text-muted); font-weight:500;}#app-attendance .conn-banner{
+  font-family:var(--att-font-mono); font-size:11px; letter-spacing:0.03em; padding:9px 14px; border-radius:8px;
+  background:rgba(239,91,91,0.1); border:1px solid rgba(239,91,91,0.3); color:var(--att-red); margin-bottom:16px;
+}#app-attendance .conn-banner.ok{background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.25); color:var(--att-green);}#app-attendance /* ---------- Generic panel ---------- */
+.panel{background:var(--att-panel); border:1px solid var(--att-border); border-radius:12px; padding:22px;}#app-attendance .panel + .panel{margin-top:16px;}#app-attendance .section-label{
+  font-family:var(--att-font-mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--att-text-dim); margin:0 0 14px; display:flex; align-items:center; gap:8px;
+}#app-attendance .section-label::after{content:""; flex:1; height:1px; background:var(--att-border-soft);}#app-attendance /* ---------- Check-in view ---------- */
+.checkin-wrap{display:flex; justify-content:center; padding:30px 0;}#app-attendance .checkin-card{
+  width:100%; max-width:380px; background:var(--att-panel); border:1px solid var(--att-border);
+  border-radius:16px; overflow:hidden;
+}#app-attendance .checkin-head{padding:22px 24px 18px; position:relative;}#app-attendance .checkin-head .bar{position:absolute; top:0; left:0; right:0; height:4px;}#app-attendance .checkin-head .loc{font-family:var(--att-font-mono); font-size:11px; color:var(--att-text-dim); letter-spacing:0.08em; text-transform:uppercase;}#app-attendance .checkin-head h2{font-family:var(--att-font-head); font-size:22px; margin:6px 0 0; font-weight:600;}#app-attendance .checkin-body{padding:6px 24px 26px;}#app-attendance .code-display{
+  font-family:var(--att-font-mono); font-size:38px; letter-spacing:0.35em; text-align:center;
+  background:var(--att-panel-2); border:1px solid var(--att-border); border-radius:10px; padding:18px 0 14px;
+  margin:14px 0 16px; color:var(--att-text); min-height:66px;
+}#app-attendance .code-display.empty{color:var(--att-text-dim);}#app-attendance .keypad{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}#app-attendance .key{
+  font-family:var(--att-font-mono); font-size:20px; background:var(--att-panel-2); border:1px solid var(--att-border);
+  color:var(--att-text); border-radius:10px; padding:16px 0; cursor:pointer; transition:background .1s ease;
+}#app-attendance .key:active{background:#282f38;}#app-attendance .key.wide{grid-column:span 1; font-size:13px; color:var(--att-text-muted);}#app-attendance .submit-btn{
+  width:100%; margin-top:14px; padding:15px 0; border-radius:10px; border:none; cursor:pointer;
+  font-family:var(--att-font-head); font-weight:600; font-size:14px; letter-spacing:0.02em;
+  background:var(--att-green); color:#0c1310; transition:opacity .15s ease;
+}#app-attendance .submit-btn:disabled{background:var(--att-border); color:var(--att-text-dim); cursor:not-allowed;}#app-attendance .wing-picker{display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap;}#app-attendance .wing-pick-btn{
+  flex:1; min-width:30%; font-family:var(--att-font-mono); font-size:11px; padding:9px 4px; border-radius:8px;
+  border:1px solid var(--att-border); background:var(--att-panel-2); color:var(--att-text-muted); cursor:pointer;
+}#app-attendance .wing-pick-btn.active{color:#0c1310; border-color:transparent;}#app-attendance .confirm-flash{padding:34px 24px; text-align:center;}#app-attendance .confirm-flash .icon{font-size:44px; margin-bottom:10px;}#app-attendance .confirm-flash h3{font-family:var(--att-font-head); font-size:19px; margin:0 0 4px;}#app-attendance .confirm-flash p{color:var(--att-text-muted); font-size:13px; margin:2px 0;}#app-attendance .confirm-flash .time{font-family:var(--att-font-mono); font-size:26px; margin:10px 0 4px; color:var(--att-text);}#app-attendance .confirm-flash .again{margin-top:20px; background:var(--att-panel-2); border:1px solid var(--att-border); color:var(--att-text-muted); font-family:var(--att-font-mono); font-size:11px; padding:9px 16px; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing:.06em;}#app-attendance .error-msg{color:var(--att-red); font-size:12px; font-family:var(--att-font-mono); text-align:center; margin-top:10px; min-height:16px;}#app-attendance .spinner-note{text-align:center; color:var(--att-text-dim); font-family:var(--att-font-mono); font-size:11px; margin-top:10px;}#app-attendance /* ---------- Duty board ---------- */
+.board-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:16px;}
+@media (max-width:800px){#app-attendance .board-grid{grid-template-columns:1fr;}}#app-attendance .wing-block{border:1px solid var(--att-border-soft); border-radius:10px; margin-bottom:12px; overflow:hidden;}#app-attendance .wing-block:last-child{margin-bottom:0;}#app-attendance .wing-block-head{
+  display:flex; align-items:center; justify-content:space-between; padding:10px 14px;
+  background:var(--att-panel-2); font-family:var(--att-font-mono); font-size:12px; letter-spacing:0.04em;
+}#app-attendance .wing-block-head .wname{display:flex; align-items:center; gap:8px; text-transform:uppercase; color:var(--att-text);}#app-attendance .wing-chip{width:8px;height:8px;border-radius:50%; flex-shrink:0;}#app-attendance .wing-count{color:var(--att-text-dim);}#app-attendance .duty-row{
+  display:flex; align-items:center; gap:10px; padding:11px 14px; border-top:1px solid var(--att-border-soft);
+  font-size:13px; flex-wrap:wrap; row-gap:4px;
+}#app-attendance .status-dot{width:8px;height:8px;border-radius:50%; flex-shrink:0;}#app-attendance .status-dot.on{background:var(--att-green); box-shadow:0 0 0 3px rgba(52,211,153,0.13);}#app-attendance .status-dot.off{background:var(--att-text-dim);}#app-attendance .duty-row .name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}#app-attendance .duty-row .phone{font-family:var(--att-font-mono); font-size:12px; color:var(--att-text-muted); white-space:nowrap;}#app-attendance .duty-row .time{font-family:var(--att-font-mono); font-size:11px; color:var(--att-text-dim); white-space:nowrap; min-width:70px; text-align:right;}#app-attendance .empty-row{padding:14px; text-align:center; color:var(--att-text-dim); font-size:12px; font-family:var(--att-font-mono);}#app-attendance .stat-strip{display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;}#app-attendance .stat-card{flex:1; min-width:120px; background:var(--att-panel-2); border:1px solid var(--att-border-soft); border-radius:10px; padding:14px 16px;}#app-attendance .stat-card .n{font-family:var(--att-font-mono); font-size:26px; font-weight:600;}#app-attendance .stat-card .l{font-size:11px; color:var(--att-text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px;}#app-attendance /* ---------- Admin ---------- */
+.pin-gate{display:flex; justify-content:center; padding:60px 0;}#app-attendance .pin-box{width:280px; text-align:center;}#app-attendance .pin-box.wide{width:360px;}#app-attendance .pin-box input{
+  width:100%; font-family:var(--att-font-mono); font-size:24px; letter-spacing:0.4em; text-align:center;
+  background:var(--att-panel-2); border:1px solid var(--att-border); border-radius:10px; padding:14px 0; color:var(--att-text);
+  margin-bottom:10px;
+}#app-attendance .pin-box input.url-input{font-size:12px; letter-spacing:0; text-align:left; padding:12px 14px;}#app-attendance .pin-box button{width:100%; padding:13px 0; border-radius:10px; border:none; background:var(--att-green); color:#0c1310; font-family:var(--att-font-head); font-weight:600; cursor:pointer;}#app-attendance .admin-tabs{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap;}#app-attendance .admin-tabs button{
+  font-family:var(--att-font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.05em;
+  background:var(--att-panel-2); border:1px solid var(--att-border-soft); color:var(--att-text-muted);
+  padding:8px 14px; border-radius:7px; cursor:pointer;
+}#app-attendance .admin-tabs button.active{color:var(--att-text); border-color:var(--att-green); background:rgba(52,211,153,0.07);}#app-attendance .form-row{display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;}#app-attendance .form-row input, #app-attendance .form-row select{
+  flex:1; min-width:120px; background:var(--att-panel-2); border:1px solid var(--att-border); border-radius:8px;
+  padding:10px 12px; color:var(--att-text); font-family:var(--att-font-body); font-size:13px;
+}#app-attendance .btn{font-family:var(--att-font-head); font-weight:600; font-size:13px; padding:10px 18px; border-radius:8px; border:none; cursor:pointer;}#app-attendance .btn-primary{background:var(--att-green); color:#0c1310;}#app-attendance .btn-secondary{background:var(--att-panel-2); border:1px solid var(--att-border); color:var(--att-text-muted);}#app-attendance .btn-danger{background:rgba(239,91,91,0.12); color:var(--att-red); border:1px solid rgba(239,91,91,0.3);}#app-attendance .btn:disabled{opacity:.5; cursor:not-allowed;}#app-attendance table{width:100%; border-collapse:collapse; font-size:13px;}#app-attendance th{text-align:left; font-family:var(--att-font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--att-text-dim); padding:8px 10px; border-bottom:1px solid var(--att-border);}#app-attendance td{padding:9px 10px; border-bottom:1px solid var(--att-border-soft); color:var(--att-text);}#app-attendance td.mono{font-family:var(--att-font-mono); font-size:12px; color:var(--att-text-muted);}#app-attendance .role-tag{font-family:var(--att-font-mono); font-size:10px; padding:3px 7px; border-radius:5px; text-transform:uppercase; letter-spacing:0.04em;}#app-attendance .role-tag.security{background:rgba(91,158,245,0.12); color:var(--att-wingA);}#app-attendance .role-tag.technical{background:rgba(224,166,60,0.14); color:var(--att-office);}#app-attendance .role-tag.manager{background:rgba(181,139,250,0.12); color:var(--att-wingB);}#app-attendance .role-tag.gym_attendant{background:rgba(139,212,80,0.14); color:var(--att-gym);}#app-attendance .icon-btn{background:transparent; border:none; color:var(--att-text-dim); cursor:pointer; font-size:13px; padding:4px 6px;}#app-attendance .icon-btn:hover{color:var(--att-red);}#app-attendance .qr-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+@media (max-width:700px){#app-attendance .qr-grid{grid-template-columns:1fr;}}#app-attendance .qr-card{background:var(--att-panel-2); border:1px solid var(--att-border-soft); border-radius:12px; padding:20px; text-align:center;}#app-attendance .qr-card h4{font-family:var(--att-font-head); margin:0 0 4px; font-size:15px;}#app-attendance .qr-card .link{font-family:var(--att-font-mono); font-size:10px; color:var(--att-text-dim); word-break:break-all; margin:8px 0;}#app-attendance .qr-canvas-wrap{background:#fff; border-radius:8px; padding:10px; display:inline-block; margin:10px 0;}#app-attendance .small-muted{font-size:11px; color:var(--att-text-dim); margin-top:6px;}#app-attendance .rename-input{background:transparent; border:none; border-bottom:1px dashed var(--att-border); color:var(--att-text); font-family:var(--att-font-head); font-size:15px; text-align:center; width:100%; padding:2px 0;}#app-attendance .toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;}#app-attendance .filter-select{background:var(--att-panel-2); border:1px solid var(--att-border); color:var(--att-text-muted); font-family:var(--att-font-mono); font-size:12px; padding:7px 10px; border-radius:7px;}#app-attendance .empty-state{padding:30px; text-align:center; color:var(--att-text-dim); font-size:13px;}#app-attendance .code-pill{font-family:var(--att-font-mono); background:var(--att-panel); border:1px solid var(--att-border); padding:3px 8px; border-radius:6px; font-size:12px; letter-spacing:0.05em;}
+
 </style>
 </head>
 <body>
+
+<div class="sys-switch">
+  <button class="sys-btn active" data-sys="water">💧 Water Monitoring</button>
+  <button class="sys-btn" data-sys="attendance">🔐 Attendance</button>
+</div>
+
+<div id="app-water" class="app-view active">
 
 <header>
   <button id="backBtn" onclick="App.goHome()">Back</button>
@@ -724,6 +839,14 @@
         <div>
           <div class="title">Dashboard</div>
           <div class="desc">View current tank levels &amp; recent readings</div>
+        </div>
+      </button>
+
+      <button class="home-card" onclick="goDutyBoard()">
+        <span class="emoji">🛡️</span>
+        <div>
+          <div class="title">Duty Board</div>
+          <div class="desc">Live security &amp; staff duty status</div>
         </div>
       </button>
     </div>
@@ -972,6 +1095,12 @@
   </section>
 
 </main>
+
+</div><!-- /#app-water -->
+
+<div id="app-attendance" class="app-view">
+  <div id="app"><!-- rendered entirely by the Att module's JS --></div>
+</div><!-- /#app-attendance -->
 
 <script>
 /* ============================================================
@@ -1608,6 +1737,666 @@ document.getElementById('pinInput').addEventListener('keydown', function (e) {
     App.checkStaffPin();
   }
 });
+</script>
+
+<script>
+/* ============================================================
+   ATTENDANCE SYSTEM — add-on module (3-Wing Security & Staff)
+   Fully separate from the App module above: own state, own DOM
+   root (#app inside #app-attendance), own hash routes (#att-...).
+   Talks to the SAME Apps Script Web App (Code-merged.gs), using
+   action names prefixed "att_" so it never collides with the
+   Water Monitoring formType/action values.
+============================================================ */
+// Same deployed Apps Script Web App as the Water Monitoring module above —
+// the merged Code-merged.gs backend handles both, routed by the "att_" action prefix.
+const ATT_API_URL = 'https://script.google.com/macros/s/AKfycbyg7Yk0On2fCfdrcDOP7JyOA7PpT55XCoWVgjI-WMye6QJPZSD-6k7OTlS0_4ejOFMJ/exec';
+
+const Att = (function(){
+
+/* ============================================================
+   CONFIG / CONSTANTS
+============================================================ */
+const WING_IDS = ['A','B','C','OFFICE','GYM'];           // all scan/check-in points
+const SECURITY_WINGS = ['A','B','C'];                     // the 3 wings security is grouped by
+const WING_COLOR = {A:'var(--wingA)', B:'var(--wingB)', C:'var(--wingC)', OFFICE:'var(--office)', GYM:'var(--gym)'};
+const ROLES = {security:'Security', technical:'Technical', manager:'Manager', gym_attendant:'Gym Attendant'};
+const LOCATION_ROLES = { OFFICE: ['technical','manager'], GYM: ['gym_attendant','manager'] };
+
+let state = {
+  route: 'checkin',
+  checkinWing: 'A',
+  checkinCode: '',
+  checkinResult: null,
+  checkinError: '',
+  checkinBusy: false,
+  adminUnlocked: false,
+  adminTab: 'staff',
+  pinInput: '',
+  staffList: [],
+  wings: {A:{name:'Wing A'}, B:{name:'Wing B'}, C:{name:'Wing C'}, OFFICE:{name:'Office'}, GYM:{name:'Gym'}},
+  pin: '1234',
+  todaysEvents: [],
+  logDateFilter: '',
+  logRoleFilter: 'all',
+  logEvents: [],
+  loading: true,
+};
+
+/* ============================================================
+   HELPERS
+============================================================ */
+function todayKey(d = new Date()){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function timeStr(d){ return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
+function shortTime(iso){ const d = new Date(iso); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+function dateStr(d = new Date()){ return d.toLocaleDateString(undefined, {weekday:'short', day:'2-digit', month:'short', year:'numeric'}); }
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+
+/* ============================================================
+   DATA LAYER — talks to the Google Apps Script Web App.
+   The Sheet is the single source of truth for staff, attendance,
+   wing names, and the admin PIN. The only thing kept in this app's
+   own storage is the Web App URL itself, so it's remembered next time.
+============================================================ */
+async function apiGet(dateKey){
+  try{
+    const res = await fetch(ATT_API_URL + '?action=att_data&date=' + encodeURIComponent(dateKey));
+    return await res.json();
+  }catch(e){ console.error('apiGet failed', e); return null; }
+}
+async function apiPost(action, payload){
+  try{
+    const res = await fetch(ATT_API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, // avoids a CORS preflight against Apps Script
+      body: JSON.stringify(Object.assign({action}, payload))
+    });
+    return await res.json();
+  }catch(e){ console.error('apiPost failed', e); return {ok:false, error:'Network error reaching the Sheet.'}; }
+}
+
+async function refreshData(dateKey){
+  dateKey = dateKey || todayKey();
+  const data = await apiGet(dateKey);
+  if(data && data.ok){
+    state.staffList = (data.staff||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    if(data.wings) state.wings = Object.assign({}, state.wings, data.wings);
+    if(data.pin) state.pin = data.pin;
+    state.connError = '';
+    if(dateKey === todayKey()) state.todaysEvents = data.attendance || [];
+    state.logEvents = data.attendance || [];
+    return true;
+  }
+  state.connError = 'Could not reach the connected Google Sheet. Check your internet connection, or reconnect it in Admin.';
+  return false;
+}
+
+/* Determine each staff member's latest status from today's events */
+function computeStatusMap(events){
+  const map = {};
+  for(const ev of events){ map[ev.staffId] = {type: ev.type, time: ev.time, wing: ev.wing}; }
+  return map;
+}
+
+/* ============================================================
+   RENDER: ROOT
+============================================================ */
+function render(){
+  const el = document.getElementById('app');
+  el.innerHTML = renderTopbar() + renderRoute();
+  attachHandlers();
+}
+
+function renderTopbar(){
+  const now = new Date();
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <h1>Duty Attendance</h1>
+        <span class="sub">3-WING SECURITY &amp; STAFF · GOOGLE SHEET</span>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn ${state.route==='checkin'?'active':''}" data-route="checkin">Check-In</button>
+      <button class="tab-btn ${state.route==='dashboard'?'active':''}" data-route="dashboard">Duty Board</button>
+      <button class="tab-btn ${state.route==='admin'?'active':''}" data-route="admin">Admin</button>
+    </div>
+    <div class="clock"><b>${dateStr(now)}</b><br>${timeStr(now)}</div>
+  </div>`;
+}
+
+function renderRoute(){
+  if(state.loading) return `<div class="empty-state">Loading duty board…</div>`;
+  if(state.route === 'checkin') return renderCheckin();
+  if(state.route === 'dashboard') return renderDashboard();
+  if(state.route === 'admin') return renderAdmin();
+  return '';
+}
+
+/* ============================================================
+   RENDER: CHECK-IN
+============================================================ */
+function renderCheckin(){
+  const wing = state.checkinWing;
+  const wingName = state.wings[wing]?.name || ('Wing '+wing);
+
+  if(state.checkinResult){
+    const r = state.checkinResult;
+    const isIn = r.type === 'in';
+    return `
+    <div class="checkin-wrap">
+      <div class="checkin-card">
+        <div class="confirm-flash">
+          <div class="icon">${isIn ? '✅' : '👋'}</div>
+          <h3>${isIn ? 'Checked in' : 'Checked out'}</h3>
+          <p>${esc(r.name)} · ${ROLES[r.role]||r.role}</p>
+          ${r.wing ? `<p style="color:${WING_COLOR[r.wing]}">${esc(state.wings[r.wing]?.name || r.wing)}</p>` : ''}
+          <div class="time">${shortTime(r.time)}</div>
+          <button class="again" data-action="checkin-reset">Scan next person</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="checkin-wrap">
+    <div class="checkin-card">
+      <div class="checkin-head">
+        <div class="bar" style="background:${WING_COLOR[wing]}"></div>
+        <div class="loc">Entrance scan point</div>
+        <h2>${esc(wingName)}</h2>
+      </div>
+      <div class="checkin-body">
+        <div class="wing-picker">
+          ${WING_IDS.map(w => `
+            <button class="wing-pick-btn ${w===wing?'active':''}" data-action="pick-wing" data-wing="${w}"
+              style="${w===wing?`background:${WING_COLOR[w]};`:''}">
+              ${esc(state.wings[w]?.name || ('Wing '+w))}
+            </button>`).join('')}
+        </div>
+        <div class="code-display ${state.checkinCode?'':'empty'}">${state.checkinCode ? '•'.repeat(state.checkinCode.length) : 'Enter code'}</div>
+        <div class="keypad">
+          ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" data-action="key" data-key="${n}">${n}</button>`).join('')}
+          <button class="key wide" data-action="key" data-key="clear">Clear</button>
+          <button class="key" data-action="key" data-key="0">0</button>
+          <button class="key wide" data-action="key" data-key="back">⌫</button>
+        </div>
+        <button class="submit-btn" data-action="submit-checkin" ${(state.checkinCode.length<4 || state.checkinBusy)?'disabled':''}>${state.checkinBusy?'Marking…':'Mark attendance'}</button>
+        <div class="error-msg">${esc(state.checkinError)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: DASHBOARD (live duty board)
+============================================================ */
+function renderDashboard(){
+  const statusMap = computeStatusMap(state.todaysEvents);
+  const staff = state.staffList;
+  const onDuty = (s) => statusMap[s.id]?.type === 'in';
+
+  const security = staff.filter(s => s.role === 'security');
+  const technical = staff.filter(s => s.role === 'technical' && onDuty(s));
+  const managers = staff.filter(s => s.role === 'manager' && onDuty(s));
+  const gymAttendants = staff.filter(s => s.role === 'gym_attendant' && onDuty(s));
+  const onDutyCount = staff.filter(onDuty).length;
+
+  const wingRows = SECURITY_WINGS.map(w => {
+    const guards = security.filter(s => onDuty(s) && statusMap[s.id]?.wing === w);
+    return `
+    <div class="wing-block">
+      <div class="wing-block-head">
+        <div class="wname"><span class="wing-chip" style="background:${WING_COLOR[w]}"></span>${esc(state.wings[w]?.name || 'Wing '+w)}</div>
+        <div class="wing-count">${guards.length} on duty</div>
+      </div>
+      ${guards.length ? guards.map(g => `
+        <div class="duty-row">
+          <span class="status-dot on"></span>
+          <span class="name">${esc(g.name)}</span>
+          <span class="phone">${esc(g.phone||'—')}</span>
+          <span class="time">${shortTime(statusMap[g.id].time)}</span>
+        </div>`).join('') : `<div class="empty-row">No one on duty</div>`}
+    </div>`;
+  }).join('');
+
+  const locationBlock = (locId) => {
+    const allowedRoles = LOCATION_ROLES[locId] || [];
+    const people = staff.filter(s => onDuty(s) && allowedRoles.includes(s.role) && statusMap[s.id]?.wing === locId);
+    return `
+    <div class="wing-block">
+      <div class="wing-block-head">
+        <div class="wname"><span class="wing-chip" style="background:${WING_COLOR[locId]}"></span>${esc(state.wings[locId]?.name || locId)}</div>
+        <div class="wing-count">${people.length} on duty</div>
+      </div>
+      ${people.length ? people.map(p => `
+        <div class="duty-row">
+          <span class="status-dot on"></span>
+          <span class="name">${esc(p.name)}</span>
+          <span class="role-tag ${p.role}" style="margin-right:2px;">${ROLES[p.role]}</span>
+          <span class="phone">${esc(p.phone||'—')}</span>
+          <span class="time">${shortTime(statusMap[p.id].time)}</span>
+        </div>`).join('') : `<div class="empty-row">No one on duty</div>`}
+    </div>`;
+  };
+
+  return `
+  <div class="stat-strip">
+    <div class="stat-card"><div class="n">${onDutyCount}</div><div class="l">Total on duty</div></div>
+    <div class="stat-card"><div class="n">${security.filter(onDuty).length}</div><div class="l">Security on duty</div></div>
+    <div class="stat-card"><div class="n">${technical.length}</div><div class="l">Technical on duty</div></div>
+    <div class="stat-card"><div class="n">${managers.length}</div><div class="l">Managers on duty</div></div>
+    <div class="stat-card"><div class="n">${gymAttendants.length}</div><div class="l">Gym attendants on duty</div></div>
+  </div>
+  <div class="board-grid">
+    <div>
+      <p class="section-label">Security — by wing</p>
+      ${wingRows}
+    </div>
+    <div>
+      <p class="section-label">Office</p>
+      ${locationBlock('OFFICE')}
+      <p class="section-label" style="margin-top:16px;">Gym</p>
+      ${locationBlock('GYM')}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: ADMIN
+============================================================ */
+function renderAdmin(){
+  if(!state.adminUnlocked){
+    return `
+    <div class="pin-gate">
+      <div class="pin-box">
+        <p class="section-label" style="justify-content:center;">Admin PIN</p>
+        <input type="password" inputmode="numeric" maxlength="6" id="pin-input" value="${esc(state.pinInput)}" placeholder="••••">
+        <button data-action="pin-submit">Unlock</button>
+        <div class="error-msg">${esc(state.checkinError)}</div>
+        <p class="small-muted">Default PIN is 1234. Change it by editing the "pin" row in the Config tab of your Sheet.</p>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="admin-tabs">
+    <button class="${state.adminTab==='staff'?'active':''}" data-action="admin-tab" data-tab="staff">Staff</button>
+    <button class="${state.adminTab==='qr'?'active':''}" data-action="admin-tab" data-tab="qr">QR Codes</button>
+    <button class="${state.adminTab==='log'?'active':''}" data-action="admin-tab" data-tab="log">Attendance Log</button>
+  </div>
+  ${state.adminTab==='staff' ? renderAdminStaff() : ''}
+  ${state.adminTab==='qr' ? renderAdminQr() : ''}
+  ${state.adminTab==='log' ? renderAdminLog() : ''}
+  `;
+}
+
+function renderAdminStaff(){
+  const rows = state.staffList.map(s => `
+    <tr>
+      <td>${esc(s.name)}</td>
+      <td><span class="role-tag ${s.role}">${ROLES[s.role]||s.role}</span></td>
+      <td class="mono">${esc(s.phone||'—')}</td>
+      <td><span class="code-pill">${esc(s.code)}</span></td>
+      <td><button class="icon-btn" data-action="delete-staff" data-id="${s.id}" title="Remove">✕</button></td>
+    </tr>`).join('');
+
+  return `
+  <div class="panel">
+    <p class="section-label">Add staff member</p>
+    <div class="form-row">
+      <input type="text" id="new-name" placeholder="Full name">
+      <select id="new-role">
+        <option value="security">Security (Wing A/B/C)</option>
+        <option value="technical">Technical (Office)</option>
+        <option value="manager">Manager (Office &amp; Gym)</option>
+        <option value="gym_attendant">Gym Attendant (Gym)</option>
+      </select>
+      <input type="tel" id="new-phone" placeholder="Mobile number">
+      <button class="btn btn-primary" data-action="add-staff">Add + generate code</button>
+    </div>
+    <p class="small-muted">This writes straight to the Staff tab of your Google Sheet. Nobody is fixed to one spot — whoever appears where updates automatically based on the QR they last scanned.</p>
+  </div>
+  <div class="panel">
+    <p class="section-label">All staff (${state.staffList.length})</p>
+    ${state.staffList.length ? `
+    <table>
+      <thead><tr><th>Name</th><th>Role</th><th>Contact</th><th>Login code</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>` : `<div class="empty-state">No staff added yet.</div>`}
+  </div>`;
+}
+
+function renderAdminQr(){
+  return `
+  <div class="panel">
+    <p class="section-label">Location names</p>
+    <div class="form-row">
+      ${WING_IDS.map(w => `<input type="text" class="rename-input" data-action="rename-wing" data-wing="${w}" value="${esc(state.wings[w]?.name||'')}">`).join('')}
+    </div>
+    <p class="small-muted">Saved to the Config tab of your Sheet. QR codes below stay valid after renaming.</p>
+  </div>
+  <div class="panel">
+    <p class="section-label">Printable entrance QR codes</p>
+    <div class="qr-grid">
+      ${WING_IDS.map(w => `
+        <div class="qr-card">
+          <h4 style="color:${WING_COLOR[w]}">${esc(state.wings[w]?.name||w)}</h4>
+          <div class="qr-canvas-wrap"><div id="qr-${w}"></div></div>
+          <div class="link">${location.href.split('#')[0]}#att-checkin-${w}</div>
+          <button class="btn btn-secondary" data-action="download-qr" data-wing="${w}">Download PNG</button>
+        </div>`).join('')}
+    </div>
+    <p class="small-muted" style="margin-top:14px;">Print one QR per spot. Anyone who scans it lands on that check-in screen and enters their personal code.</p>
+  </div>`;
+}
+
+function renderAdminLog(){
+  const dateKey = state.logDateFilter || todayKey();
+  const events = state.logEvents;
+  const staffMap = {};
+  state.staffList.forEach(s => staffMap[s.id] = s);
+  const filtered = events.filter(ev => state.logRoleFilter==='all' || staffMap[ev.staffId]?.role === state.logRoleFilter);
+
+  const rows = filtered.map(ev => {
+    const s = staffMap[ev.staffId] || {name:'(removed staff)', role:''};
+    return `
+    <tr>
+      <td class="mono">${shortTime(ev.time)}</td>
+      <td>${esc(s.name)}</td>
+      <td>${s.role && ROLES[s.role] ? `<span class="role-tag ${s.role}">${ROLES[s.role]}</span>` : '—'}</td>
+      <td style="color:${WING_COLOR[ev.wing]||'inherit'}">${esc(state.wings[ev.wing]?.name || ev.wing || '—')}</td>
+      <td>${ev.type==='in' ? '<span style="color:var(--green)">IN</span>' : '<span style="color:var(--text-dim)">OUT</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div class="panel">
+    <div class="toolbar">
+      <div class="form-row" style="margin:0;">
+        <input type="date" class="filter-select" id="log-date" value="${dateKey}">
+        <select class="filter-select" id="log-role">
+          <option value="all">All roles</option>
+          <option value="security">Security</option>
+          <option value="technical">Technical</option>
+          <option value="manager">Manager</option>
+          <option value="gym_attendant">Gym Attendant</option>
+        </select>
+        <button class="btn btn-secondary" data-action="log-filter-apply">Apply</button>
+      </div>
+      <button class="btn btn-secondary" data-action="export-csv">Export CSV</button>
+    </div>
+    ${filtered.length ? `
+    <table>
+      <thead><tr><th>Time</th><th>Name</th><th>Role</th><th>Location</th><th>Type</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>` : `<div class="empty-state">No attendance events for this date.</div>`}
+    <p class="small-muted" style="margin-top:10px;">This reads directly from the Attendance tab of your Sheet — the Sheet itself is your full permanent record.</p>
+  </div>
+  <div class="panel">
+    <p class="section-label">Reset</p>
+    <button class="btn btn-danger" data-action="clear-all">Clear all staff &amp; attendance rows in the Sheet</button>
+    <p class="small-muted">Use only when setting this up for the first time — this empties the Staff and Attendance tabs for everyone.</p>
+  </div>`;
+}
+
+/* ============================================================
+   QR DRAWING
+============================================================ */
+function drawQrCodes(){
+  if(state.route !== 'admin' || !state.adminUnlocked || state.adminTab !== 'qr') return;
+  WING_IDS.forEach(w => {
+    const el = document.getElementById('qr-'+w);
+    if(!el) return;
+    el.innerHTML = '';
+    const url = location.href.split('#')[0] + '#att-checkin-' + w;
+    new QRCode(el, {text: url, width:140, height:140, colorDark:'#12151a', colorLight:'#ffffff'});
+  });
+}
+
+/* ============================================================
+   EVENT HANDLERS
+============================================================ */
+function attachHandlers(){
+  document.querySelectorAll('[data-route]').forEach(b => b.onclick = () => {
+    location.hash = 'att-' + (b.dataset.route === 'checkin' ? ('checkin-'+state.checkinWing) : b.dataset.route);
+  });
+
+  document.querySelectorAll('[data-action="pick-wing"]').forEach(b => b.onclick = () => {
+    state.checkinWing = b.dataset.wing; state.checkinError=''; render();
+  });
+  document.querySelectorAll('[data-action="key"]').forEach(b => b.onclick = () => {
+    const k = b.dataset.key;
+    if(k === 'clear') state.checkinCode = '';
+    else if(k === 'back') state.checkinCode = state.checkinCode.slice(0,-1);
+    else if(state.checkinCode.length < 6) state.checkinCode += k;
+    state.checkinError='';
+    render();
+  });
+  const submitBtn = document.querySelector('[data-action="submit-checkin"]');
+  if(submitBtn) submitBtn.onclick = doCheckin;
+  const againBtn = document.querySelector('[data-action="checkin-reset"]');
+  if(againBtn) againBtn.onclick = () => { state.checkinResult=null; state.checkinCode=''; render(); };
+
+  const pinInput = document.getElementById('pin-input');
+  if(pinInput){
+    pinInput.oninput = (e) => { state.pinInput = e.target.value; };
+    pinInput.onkeydown = (e) => { if(e.key==='Enter') submitPin(); };
+  }
+  const pinBtn = document.querySelector('[data-action="pin-submit"]');
+  if(pinBtn) pinBtn.onclick = submitPin;
+
+  document.querySelectorAll('[data-action="admin-tab"]').forEach(b => b.onclick = async () => {
+    state.adminTab = b.dataset.tab;
+    if(b.dataset.tab === 'log') await refreshData(state.logDateFilter || todayKey());
+    render();
+  });
+
+  const addBtn = document.querySelector('[data-action="add-staff"]');
+  if(addBtn) addBtn.onclick = addStaff;
+
+  document.querySelectorAll('[data-action="delete-staff"]').forEach(b => b.onclick = () => removeStaff(b.dataset.id));
+
+  document.querySelectorAll('[data-action="rename-wing"]').forEach(inp => {
+    inp.onblur = async () => {
+      state.wings[inp.dataset.wing].name = inp.value.trim() || inp.dataset.wing;
+      await apiPost('att_saveConfig', {wings: state.wings});
+      render();
+    };
+    inp.onkeydown = (e) => { if(e.key==='Enter') inp.blur(); };
+  });
+
+  document.querySelectorAll('[data-action="download-qr"]').forEach(b => b.onclick = () => downloadQr(b.dataset.wing));
+
+  const logApply = document.querySelector('[data-action="log-filter-apply"]');
+  if(logApply) logApply.onclick = async () => {
+    state.logDateFilter = document.getElementById('log-date').value;
+    state.logRoleFilter = document.getElementById('log-role').value;
+    await refreshData(state.logDateFilter || todayKey());
+    render();
+  };
+  const exportBtn = document.querySelector('[data-action="export-csv"]');
+  if(exportBtn) exportBtn.onclick = exportCsv;
+
+  const clearBtn = document.querySelector('[data-action="clear-all"]');
+  if(clearBtn) clearBtn.onclick = clearAllData;
+
+  drawQrCodes();
+}
+
+async function doCheckin(){
+  const code = state.checkinCode;
+  state.checkinBusy = true; state.checkinError=''; render();
+
+  const dKey = todayKey();
+  const res = await apiPost('att_checkin', {code, location: state.checkinWing, date: dKey});
+  state.checkinBusy = false;
+
+  if(!res || !res.ok){
+    state.checkinError = (res && res.error) ? res.error : 'Could not reach the Sheet. Try again.';
+    render();
+    return;
+  }
+
+  state.checkinResult = {name: res.staff.name, role: res.staff.role, wing: state.checkinWing, type: res.type, time: res.time};
+  state.checkinCode = '';
+  render();
+
+  // sync the dashboard/log in the background so this scan shows up for everyone
+  refreshData(dKey);
+}
+
+async function submitPin(){
+  const val = document.getElementById('pin-input') ? document.getElementById('pin-input').value : state.pinInput;
+  if(val === state.pin){
+    state.adminUnlocked = true; state.checkinError='';
+    await refreshData(todayKey());
+    render();
+  } else {
+    state.checkinError = 'Incorrect PIN.'; render();
+  }
+}
+
+async function addStaff(){
+  const name = document.getElementById('new-name').value.trim();
+  const role = document.getElementById('new-role').value;
+  const phone = document.getElementById('new-phone').value.trim();
+  if(!name) return;
+  const res = await apiPost('att_addStaff', {name, role, phone});
+  if(res && res.ok){
+    state.staffList.push(res.staff);
+    state.staffList.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  }
+  render();
+}
+
+async function removeStaff(id){
+  if(!confirm('Remove this staff member from the Sheet? Their past attendance rows stay in the log.')) return;
+  await apiPost('att_deleteStaff', {id});
+  state.staffList = state.staffList.filter(s => s.id !== id);
+  render();
+}
+
+function downloadQr(w){
+  const el = document.getElementById('qr-'+w);
+  const canvas = el ? el.querySelector('canvas') : null;
+  if(!canvas) return;
+  const link = document.createElement('a');
+  link.download = (state.wings[w]?.name || w).replace(/\s+/g,'-').toLowerCase() + '-qr.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportCsv(){
+  const staffMap = {};
+  state.staffList.forEach(s => staffMap[s.id]=s);
+  const rows = [['Time','Name','Role','Location','Type']];
+  state.logEvents
+    .filter(ev => state.logRoleFilter==='all' || staffMap[ev.staffId]?.role===state.logRoleFilter)
+    .forEach(ev => {
+      const s = staffMap[ev.staffId] || {name:'(removed)',role:''};
+      rows.push([new Date(ev.time).toLocaleString(), s.name, ROLES[s.role]||'', state.wings[ev.wing]?.name||ev.wing||'', ev.type]);
+    });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'attendance-' + (state.logDateFilter||todayKey()) + '.csv';
+  link.click();
+}
+
+async function clearAllData(){
+  if(!confirm('This permanently empties the Staff and Attendance tabs in your Google Sheet for everyone. Continue?')) return;
+  await apiPost('att_clearAll', {});
+  await refreshData(state.logDateFilter || todayKey());
+  render();
+}
+
+/* ============================================================
+   ROUTING
+============================================================ */
+function applyHash(){
+  const h = location.hash.replace('#','');
+  if(h.startsWith('att-checkin-')){
+    state.route = 'checkin';
+    const w = h.replace('att-checkin-','');
+    if(WING_IDS.includes(w)) state.checkinWing = w;
+  } else if(h === 'att-dashboard' || h === 'att-admin' || h === 'att-checkin'){
+    state.route = h.replace('att-','');
+  }
+}
+window.addEventListener('hashchange', () => {
+  if(!location.hash.startsWith('#att-')) return; // not ours — let the page's own logic handle it
+  applyHash(); render();
+});
+
+/* ============================================================
+   BOOT + LIVE REFRESH
+============================================================ */
+let booted = false;
+async function boot(){
+  if(booted) return;
+  booted = true;
+  applyHash();
+  await refreshData(todayKey());
+  state.loading = false;
+  render();
+
+  setInterval(() => {
+    const clockEl = document.querySelector('#app-attendance .clock');
+    if(clockEl) clockEl.innerHTML = `<b>${dateStr()}</b><br>${timeStr(new Date())}`;
+  }, 1000);
+
+  // pull fresh duty data every 8s so other people's scans show up live on the board
+  setInterval(async () => {
+    if(state.route === 'dashboard'){
+      await refreshData(todayKey());
+      render();
+    }
+  }, 8000);
+}
+
+  return { boot: boot };
+})();
+
+</script>
+
+<script>
+/* ============================================================
+   TOP-LEVEL SYSTEM SWITCHER (Water Monitoring <-> Attendance)
+============================================================ */
+(function () {
+  function activateSystem(sys) {
+    document.querySelectorAll('.sys-btn').forEach(b => b.classList.toggle('active', b.dataset.sys === sys));
+    document.getElementById('app-water').classList.toggle('active', sys === 'water');
+    document.getElementById('app-attendance').classList.toggle('active', sys === 'attendance');
+    if (sys === 'attendance') Att.boot();
+  }
+
+  document.querySelectorAll('.sys-btn').forEach(btn => {
+    btn.addEventListener('click', () => activateSystem(btn.dataset.sys));
+  });
+
+  // Lets a Water Monitoring home card ("Duty Board") jump straight into
+  // the Attendance module's live duty view, reusing the same hash route
+  // the QR codes use — Att's own routing picks it up either way.
+  window.goDutyBoard = function () {
+    location.hash = 'att-dashboard';
+    activateSystem('attendance');
+  };
+
+  // Deep link support: a scanned QR opens straight to the Attendance
+  // check-in screen (hash starts with #att-) even though Water Monitoring
+  // is the default active view on page load.
+  if (location.hash.indexOf('#att-') === 0) {
+    activateSystem('attendance');
+  }
+})();
 </script>
 
 </body>
