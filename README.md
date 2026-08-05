@@ -23,21 +23,32 @@ index.html  →  FastAPI (app/)  →  PostgreSQL
     Status forms, plus a public read-only Dashboard.
   - **Attendance** (`Att`): QR/PIN check-in, a live Duty Board, and a
     PIN-gated Admin panel (staff CRUD, QR codes, attendance log/export).
-- **Backend** (`app/`) — FastAPI, SQLAlchemy 2.x, Pydantic v2. Fully isolated
-  routers: `app/routers/water.py` (meter/tank/dashboard),
+- **Backend** (`backend/app/`) — FastAPI, SQLAlchemy 2.x, Pydantic v2. Fully
+  isolated routers: `app/routers/water.py` (meter/tank/dashboard),
   `app/routers/attendance.py` (staff/check-in/admin), `app/routers/health.py`.
   Response field names deliberately mirror the original Apps Script API
   (camelCase, e.g. `wingA`, `ugDomesticAB`) so the frontend's request/response
   handling didn't need to change.
 - **Database** — PostgreSQL. Six tables: `meter_readings`, `tank_status`,
   `staff`, `attendance` (FK → `staff`), `wings`, `app_config`. Schema in
-  `app/models.py`, migrations in `alembic/versions/`.
+  `backend/app/models.py`, migrations in `backend/alembic/versions/`.
 - **`Code.gs`** — the original Apps Script backend, kept in the repo as
   historical reference / rollback path. No longer deployed.
+
+All backend files (`Dockerfile`, `app/`, `alembic/`, `requirements.txt`,
+`scripts/`) live under `backend/`, not the repo root. This is load-bearing,
+not stylistic: the live `duxos-water-monitoring` Railway service auto-deploys
+the *repo root* from GitHub pushes to `main` with automatic builder
+detection — if a `Dockerfile` exists at the root, Railway picks it over the
+static-site (Node/Railpack) detection and the frontend service tries to run
+the backend's container instead of serving `index.html`. (This happened once
+during the migration and briefly took the live site down — keep backend
+build files out of the root.)
 
 ## Local development
 
 ```bash
+cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -66,11 +77,17 @@ frontend.
 2. Create the backend service and set its environment variables — at
    minimum `DATABASE_URL` referencing the Postgres service
    (`${{Postgres-roie.DATABASE_URL}}` in Railway's variable syntax).
-3. Deploy: `railway up -s duxos-water-backend`. The Dockerfile's `CMD` runs
-   `alembic upgrade head` before starting `uvicorn`, so every deploy
+3. Deploy from the `backend/` directory (this is what makes it the Docker
+   build context — see the note above on why it can't be the repo root):
+   `cd backend && railway up -s duxos-water-backend`. The Dockerfile's `CMD`
+   runs `alembic upgrade head` before starting `uvicorn`, so every deploy
    auto-applies any new migrations.
 4. Generate a public domain for the service (`railway domain -s
    duxos-water-backend`) and update `WEB_APP_URL` in `index.html` to match.
+
+The frontend (`duxos-water-monitoring` service) deploys automatically from
+GitHub on every push to `main` — no manual step needed for frontend-only
+changes.
 
 ### Environment variables
 
@@ -83,7 +100,7 @@ frontend.
 
 ## Database migrations
 
-Schema changes go through Alembic:
+Schema changes go through Alembic (run from `backend/`):
 
 ```bash
 alembic revision --autogenerate -m "describe the change"
@@ -92,11 +109,12 @@ alembic upgrade head
 
 ## Data migration from Excel
 
-`scripts/migrate_excel.py` is a standalone, re-runnable tool that imports a
-Google Sheets Excel export (Meter_Readings, Tank_Status, Att_Staff,
-Att_Attendance sheets) into Postgres:
+`backend/scripts/migrate_excel.py` is a standalone, re-runnable tool that
+imports a Google Sheets Excel export (Meter_Readings, Tank_Status,
+Att_Staff, Att_Attendance sheets) into Postgres:
 
 ```bash
+cd backend
 python scripts/migrate_excel.py --file "/path/to/export.xlsx" [--dry-run]
 ```
 
@@ -123,7 +141,7 @@ attendance rows import with `shift = NULL` rather than a guessed value.
 - **Attendance admin PIN** (default `1234`, stored in `app_config`) is
   enforced server-side: every admin action that adds/removes staff, edits
   config, or clears data requires the correct PIN, checked in
-  `app/routers/attendance.py`. The raw PIN is never sent to the browser —
+  `backend/app/routers/attendance.py`. The raw PIN is never sent to the browser —
   the client only gets a yes/no from `/api/attendance/verify-pin`.
 
 ## Developer notes
