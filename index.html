@@ -890,15 +890,15 @@
         <div class="section-title">Meter Readings (KL)</div>
         <div class="field">
           <label for="wingA">Wing A Meter Reading</label>
-          <input type="number" step="0.01" id="wingA" required placeholder="0.00">
+          <input type="number" step="0.01" min="0" id="wingA" required placeholder="0.00">
         </div>
         <div class="field">
           <label for="wingB">Wing B Meter Reading</label>
-          <input type="number" step="0.01" id="wingB" required placeholder="0.00">
+          <input type="number" step="0.01" min="0" id="wingB" required placeholder="0.00">
         </div>
         <div class="field">
           <label for="wingC">Wing C Meter Reading</label>
-          <input type="number" step="0.01" id="wingC" required placeholder="0.00">
+          <input type="number" step="0.01" min="0" id="wingC" required placeholder="0.00">
         </div>
       </div>
 
@@ -945,11 +945,11 @@
         <div class="section-title">Underground Domestic Water (L)</div>
         <div class="field">
           <label for="ugDomesticAB">Wing A + B <span class="optional">(Common Tank · Capacity: 90,000 L)</span></label>
-          <input type="number" id="ugDomesticAB" required placeholder="0">
+          <input type="number" min="0" id="ugDomesticAB" required placeholder="0">
         </div>
         <div class="field">
           <label for="ugDomesticC">Wing C <span class="optional">(Capacity: 45,000 L)</span></label>
-          <input type="number" id="ugDomesticC" required placeholder="0">
+          <input type="number" min="0" id="ugDomesticC" required placeholder="0">
         </div>
       </div>
 
@@ -957,11 +957,11 @@
         <div class="section-title">Underground Flushing Water (L)</div>
         <div class="field">
           <label for="ugFlushingAB">Wing A + B <span class="optional">(Common Tank · Capacity: 50,000 L)</span></label>
-          <input type="number" id="ugFlushingAB" required placeholder="0">
+          <input type="number" min="0" id="ugFlushingAB" required placeholder="0">
         </div>
         <div class="field">
           <label for="ugFlushingC">Wing C <span class="optional">(Capacity: 28,000 L)</span></label>
-          <input type="number" id="ugFlushingC" required placeholder="0">
+          <input type="number" min="0" id="ugFlushingC" required placeholder="0">
         </div>
       </div>
 
@@ -1024,7 +1024,7 @@
     </form>
   </section>
 
-  <!-- DASHBOARD VIEW (read-only, live data from Google Sheets via Apps Script) -->
+  <!-- DASHBOARD VIEW (read-only, live data from PostgreSQL via FastAPI) -->
   <section class="view" id="view-dashboard">
 
     <div class="dash-header">
@@ -1109,6 +1109,13 @@
    so new screens (e.g. Dashboard) can be added without touching
    existing code.
 ============================================================ */
+// Single source of truth for the deployed backend URL — the Water
+// Monitoring (API_URL) and Attendance (ATT_API_URL) modules below both
+// talk to the same FastAPI deployment, so there's only one place to
+// update after a redeploy. Replaced the Google Apps Script Web App URL
+// during the PostgreSQL migration (see README).
+const WEB_APP_URL = 'https://duxos-water-backend-production.up.railway.app';
+
 const App = (function () {
 
   // Individual access codes — one per staff member. Anyone entering their
@@ -1144,9 +1151,7 @@ const App = (function () {
   // used to pre-fill "Recorded By" after unlocking.
   let matchedStaffName = null;
 
-  // Paste the Google Apps Script Web App URL here after deployment.
-  // See DEPLOYMENT_GUIDE.md for setup steps.
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzabajaUfR_S0gYad02WGNOLVMCTNQZleYH6pHFvBJdXjQnaU4HupGJb8SQ8ESZl0xD/exec';
+  const API_URL = WEB_APP_URL;
 
   // Tank capacities (Litres) — used for reference display now,
   // and available for future calculations (e.g. Dashboard).
@@ -1315,15 +1320,18 @@ const App = (function () {
     btn.textContent = saving ? 'Saving...' : 'Save';
   }
 
+  // Maps the internal formType name to its REST path on the FastAPI backend.
+  const FORM_PATHS = { meter: '/api/water/meter', tank: '/api/water/tank' };
+
   /**
-   * Sends form data to the Apps Script backend.
+   * Sends form data to the FastAPI backend.
    * formType: 'meter' | 'tank'
    */
   function submitToBackend(formType, data) {
-    return fetch(API_URL, {
+    return fetch(API_URL + FORM_PATHS[formType], {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' }, // avoids CORS preflight on Apps Script
-      body: JSON.stringify({ formType: formType, data: data })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     }).then(function (response) {
       return response.json();
     }).then(function (result) {
@@ -1336,12 +1344,12 @@ const App = (function () {
 
   /**
    * ------------------------------------------------------------
-   * DASHBOARD — fully live, backed by Google Sheets
+   * DASHBOARD — fully live, backed by PostgreSQL via FastAPI
    * ------------------------------------------------------------
-   * A single request to the Apps Script backend (?action=latest)
-   * returns everything the Dashboard needs: the latest Tank Status
-   * entry, the last 7 Meter Readings, and today's activity status
-   * (computed server-side from real timestamps). No dummy data.
+   * A single request to the backend (/api/water/dashboard) returns
+   * everything the Dashboard needs: the latest Tank Status entry, the
+   * last 7 Meter Readings, and today's activity status (computed
+   * server-side from real timestamps). No dummy data.
    */
   function loadDashboard() {
     showDashboardLoading();
@@ -1350,7 +1358,7 @@ const App = (function () {
     let wasRedirected = false;
     let responseUrl = '';
 
-    fetch(API_URL + '?action=latest', { method: 'GET' })
+    fetch(API_URL + '/api/water/dashboard', { method: 'GET' })
       .then(function (response) {
         httpStatus = response.status + ' ' + response.statusText;
         wasRedirected = response.redirected;
@@ -1518,13 +1526,16 @@ const App = (function () {
 
   /** Builds one litres/percentage row with a horizontal progress bar. Used for Underground tanks, which are recorded in litres. */
   function buildDashRow(label, litres, capacity) {
-    const percent = capacity ? Math.min(100, (litres / capacity) * 100) : 0;
-    const cls = levelClass(percent);
+    const n = Number(litres);
+    const valid = capacity > 0 && litres !== '' && litres !== null && litres !== undefined && !isNaN(n);
+    const percent = valid ? Math.min(100, (n / capacity) * 100) : 0;
+    const cls = valid ? levelClass(percent) : '';
+    const valueText = valid ? (n.toLocaleString() + ' L (' + Math.round(percent) + '%)') : 'No data';
     return (
       '<div class="dash-row">' +
         '<div class="dash-row-top">' +
           '<span class="dash-row-label">' + label + '</span>' +
-          '<span class="dash-row-value">' + Number(litres).toLocaleString() + ' L (' + Math.round(percent) + '%)</span>' +
+          '<span class="dash-row-value">' + valueText + '</span>' +
         '</div>' +
         '<div class="progress-track"><div class="progress-fill ' + cls + '" style="width:' + percent + '%;"></div></div>' +
         '<div class="dash-row-cap">Capacity: ' + capacity.toLocaleString() + ' L</div>' +
@@ -1534,14 +1545,18 @@ const App = (function () {
 
   /** Builds one percentage-only row with a progress bar. Used for Fire Tank and Overhead tanks, which are recorded directly as %. */
   function buildDashPercentRow(label, percent) {
-    const cls = levelClass(percent);
+    const n = Number(percent);
+    const valid = percent !== '' && percent !== null && percent !== undefined && !isNaN(n);
+    const clamped = valid ? Math.min(100, Math.max(0, n)) : 0;
+    const cls = valid ? levelClass(clamped) : '';
+    const valueText = valid ? (clamped + '%') : 'No data';
     return (
       '<div class="dash-row">' +
         '<div class="dash-row-top">' +
           '<span class="dash-row-label">' + label + '</span>' +
-          '<span class="dash-row-value">' + percent + '%</span>' +
+          '<span class="dash-row-value">' + valueText + '</span>' +
         '</div>' +
-        '<div class="progress-track"><div class="progress-fill ' + cls + '" style="width:' + percent + '%;"></div></div>' +
+        '<div class="progress-track"><div class="progress-fill ' + cls + '" style="width:' + clamped + '%;"></div></div>' +
       '</div>'
     );
   }
@@ -1744,13 +1759,12 @@ document.getElementById('pinInput').addEventListener('keydown', function (e) {
    ATTENDANCE SYSTEM — add-on module (3-Wing Security & Staff)
    Fully separate from the App module above: own state, own DOM
    root (#app inside #app-attendance), own hash routes (#att-...).
-   Talks to the SAME Apps Script Web App (Code-merged.gs), using
-   action names prefixed "att_" so it never collides with the
-   Water Monitoring formType/action values.
+   Talks to the SAME FastAPI backend as the Water Monitoring module,
+   using REST paths under /api/attendance/ so it never collides with
+   the Water Monitoring routes under /api/water/.
 ============================================================ */
-// Same deployed Apps Script Web App as the Water Monitoring module above —
-// the merged Code-merged.gs backend handles both, routed by the "att_" action prefix.
-const ATT_API_URL = 'https://script.google.com/macros/s/AKfycbzabajaUfR_S0gYad02WGNOLVMCTNQZleYH6pHFvBJdXjQnaU4HupGJb8SQ8ESZl0xD/exec';
+// Same deployed FastAPI backend as the Water Monitoring module above.
+const ATT_API_URL = WEB_APP_URL;
 
 const Att = (function(){
 
@@ -1759,7 +1773,7 @@ const Att = (function(){
 ============================================================ */
 const WING_IDS = ['A','B','C','OFFICE','GYM'];           // all scan/check-in points
 const SECURITY_WINGS = ['A','B','C'];                     // the 3 wings security is grouped by
-const WING_COLOR = {A:'var(--wingA)', B:'var(--wingB)', C:'var(--wingC)', OFFICE:'var(--office)', GYM:'var(--gym)'};
+const WING_COLOR = {A:'var(--att-wingA)', B:'var(--att-wingB)', C:'var(--att-wingC)', OFFICE:'var(--att-office)', GYM:'var(--att-gym)'};
 const ROLES = {security:'Security', technical:'Technical', manager:'Manager', gym_attendant:'Gym Attendant'};
 const LOCATION_ROLES = { OFFICE: ['technical','manager'], GYM: ['gym_attendant','manager'] };
 
@@ -1797,26 +1811,37 @@ function esc(s){ return (s||'').toString().replace(/[&<>"']/g, m => ({'&':'&amp;
 
 
 /* ============================================================
-   DATA LAYER — talks to the Google Apps Script Web App.
-   The Sheet is the single source of truth for staff, attendance,
+   DATA LAYER — talks to the FastAPI backend.
+   PostgreSQL is the single source of truth for staff, attendance,
    wing names, and the admin PIN. The only thing kept in this app's
-   own storage is the Web App URL itself, so it's remembered next time.
+   own storage is the backend URL itself, so it's remembered next time.
 ============================================================ */
+// Maps each att_* action name (unchanged at every call site below) to
+// its REST path on the FastAPI backend.
+const ATT_ACTION_PATHS = {
+  att_verifyPin: '/api/attendance/verify-pin',
+  att_addStaff: '/api/attendance/staff',
+  att_deleteStaff: '/api/attendance/staff/delete',
+  att_checkin: '/api/attendance/checkin',
+  att_saveConfig: '/api/attendance/config',
+  att_clearAll: '/api/attendance/clear'
+};
+
 async function apiGet(dateKey){
   try{
-    const res = await fetch(ATT_API_URL + '?action=att_data&date=' + encodeURIComponent(dateKey));
+    const res = await fetch(ATT_API_URL + '/api/attendance/data?date=' + encodeURIComponent(dateKey));
     return await res.json();
   }catch(e){ console.error('apiGet failed', e); return null; }
 }
 async function apiPost(action, payload){
   try{
-    const res = await fetch(ATT_API_URL, {
+    const res = await fetch(ATT_API_URL + ATT_ACTION_PATHS[action], {
       method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'}, // avoids a CORS preflight against Apps Script
-      body: JSON.stringify(Object.assign({action}, payload))
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
     return await res.json();
-  }catch(e){ console.error('apiPost failed', e); return {ok:false, error:'Network error reaching the Sheet.'}; }
+  }catch(e){ console.error('apiPost failed', e); return {ok:false, error:'Network error reaching the server.'}; }
 }
 
 async function refreshData(dateKey){
@@ -1825,13 +1850,12 @@ async function refreshData(dateKey){
   if(data && data.ok){
     state.staffList = (data.staff||[]).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
     if(data.wings) state.wings = Object.assign({}, state.wings, data.wings);
-    if(data.pin) state.pin = data.pin;
     state.connError = '';
     if(dateKey === todayKey()) state.todaysEvents = data.attendance || [];
     state.logEvents = data.attendance || [];
     return true;
   }
-  state.connError = 'Could not reach the connected Google Sheet. Check your internet connection, or reconnect it in Admin.';
+  state.connError = 'Could not reach the server. Check your internet connection and try again.';
   return false;
 }
 
@@ -1847,7 +1871,8 @@ function computeStatusMap(events){
 ============================================================ */
 function render(){
   const el = document.getElementById('app');
-  el.innerHTML = renderTopbar() + renderRoute();
+  const connBanner = state.connError ? `<div class="conn-banner">${esc(state.connError)}</div>` : '';
+  el.innerHTML = renderTopbar() + connBanner + renderRoute();
   attachHandlers();
 }
 
@@ -1952,8 +1977,8 @@ function renderDashboard(){
     const sh = statusMap[staffId]?.shift;
     if(!sh) return '';
     return sh === 'day'
-      ? `<span class="role-tag" style="background:rgba(224,166,60,0.14); color:var(--office);">☀️ Day</span>`
-      : `<span class="role-tag" style="background:rgba(91,158,245,0.12); color:var(--wingA);">🌙 Night</span>`;
+      ? `<span class="role-tag" style="background:rgba(224,166,60,0.14); color:var(--att-office);">☀️ Day</span>`
+      : `<span class="role-tag" style="background:rgba(91,158,245,0.12); color:var(--att-wingA);">🌙 Night</span>`;
   };
 
   const security = staff.filter(s => s.role === 'security');
@@ -2077,7 +2102,7 @@ function renderAdminStaff(){
       <input type="tel" id="new-phone" placeholder="Mobile number">
       <button class="btn btn-primary" data-action="add-staff">Add + generate code</button>
     </div>
-    <p class="small-muted">This writes straight to the Staff tab of your Google Sheet. Nobody is fixed to one spot — whoever appears where updates automatically based on the QR they last scanned.</p>
+    <p class="small-muted">This writes straight to the database. Nobody is fixed to one spot — whoever appears where updates automatically based on the QR they last scanned.</p>
   </div>
   <div class="panel">
     <p class="section-label">All staff (${state.staffList.length})</p>
@@ -2129,7 +2154,7 @@ function renderAdminLog(){
       <td>${s.role && ROLES[s.role] ? `<span class="role-tag ${s.role}">${ROLES[s.role]}</span>` : '—'}</td>
       <td style="color:${WING_COLOR[ev.wing]||'inherit'}">${esc(state.wings[ev.wing]?.name || ev.wing || '—')}</td>
       <td>${ev.shift ? (ev.shift==='day' ? '☀️ Day' : '🌙 Night') : '—'}</td>
-      <td>${ev.type==='in' ? '<span style="color:var(--green)">IN</span>' : '<span style="color:var(--text-dim)">OUT</span>'}</td>
+      <td>${ev.type==='in' ? '<span style="color:var(--att-green)">IN</span>' : '<span style="color:var(--att-text-dim)">OUT</span>'}</td>
     </tr>`;
   }).join('');
 
@@ -2154,12 +2179,12 @@ function renderAdminLog(){
       <thead><tr><th>Time</th><th>Name</th><th>Role</th><th>Location</th><th>Shift</th><th>Type</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>` : `<div class="empty-state">No attendance events for this date.</div>`}
-    <p class="small-muted" style="margin-top:10px;">This reads directly from the Attendance tab of your Sheet — the Sheet itself is your full permanent record.</p>
+    <p class="small-muted" style="margin-top:10px;">This reads directly from the database — it's your full permanent record.</p>
   </div>
   <div class="panel">
     <p class="section-label">Reset</p>
-    <button class="btn btn-danger" data-action="clear-all">Clear all staff &amp; attendance rows in the Sheet</button>
-    <p class="small-muted">Use only when setting this up for the first time — this empties the Staff and Attendance tabs for everyone.</p>
+    <button class="btn btn-danger" data-action="clear-all">Clear all staff &amp; attendance rows</button>
+    <p class="small-muted">Use only when setting this up for the first time — this empties all staff and attendance records for everyone.</p>
   </div>`;
 }
 
@@ -2226,7 +2251,7 @@ function attachHandlers(){
   document.querySelectorAll('[data-action="rename-wing"]').forEach(inp => {
     inp.onblur = async () => {
       state.wings[inp.dataset.wing].name = inp.value.trim() || inp.dataset.wing;
-      await apiPost('att_saveConfig', {wings: state.wings});
+      await apiPost('att_saveConfig', {wings: state.wings, pin: state.pin});
       render();
     };
     inp.onkeydown = (e) => { if(e.key==='Enter') inp.blur(); };
@@ -2259,7 +2284,7 @@ async function doCheckin(){
   state.checkinBusy = false;
 
   if(!res || !res.ok){
-    state.checkinError = (res && res.error) ? res.error : 'Could not reach the Sheet. Try again.';
+    state.checkinError = (res && res.error) ? res.error : 'Could not reach the server. Try again.';
     render();
     return;
   }
@@ -2274,8 +2299,11 @@ async function doCheckin(){
 
 async function submitPin(){
   const val = document.getElementById('pin-input') ? document.getElementById('pin-input').value : state.pinInput;
-  if(val === state.pin){
-    state.adminUnlocked = true; state.checkinError='';
+  state.checkinError = '';
+  const res = await apiPost('att_verifyPin', {pin: val});
+  if(res && res.ok){
+    state.pin = val; // remembered locally only to authorize this session's admin actions
+    state.adminUnlocked = true;
     await refreshData(todayKey());
     render();
   } else {
@@ -2288,7 +2316,7 @@ async function addStaff(){
   const role = document.getElementById('new-role').value;
   const phone = document.getElementById('new-phone').value.trim();
   if(!name) return;
-  const res = await apiPost('att_addStaff', {name, role, phone});
+  const res = await apiPost('att_addStaff', {name, role, phone, pin: state.pin});
   if(res && res.ok){
     state.staffList.push(res.staff);
     state.staffList.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
@@ -2297,8 +2325,8 @@ async function addStaff(){
 }
 
 async function removeStaff(id){
-  if(!confirm('Remove this staff member from the Sheet? Their past attendance rows stay in the log.')) return;
-  await apiPost('att_deleteStaff', {id});
+  if(!confirm('Remove this staff member? Their past attendance rows stay in the log.')) return;
+  await apiPost('att_deleteStaff', {id, pin: state.pin});
   state.staffList = state.staffList.filter(s => s.id !== id);
   render();
 }
@@ -2332,8 +2360,8 @@ function exportCsv(){
 }
 
 async function clearAllData(){
-  if(!confirm('This permanently empties the Staff and Attendance tabs in your Google Sheet for everyone. Continue?')) return;
-  await apiPost('att_clearAll', {});
+  if(!confirm('This permanently empties all staff and attendance records for everyone. Continue?')) return;
+  await apiPost('att_clearAll', {pin: state.pin});
   await refreshData(state.logDateFilter || todayKey());
   render();
 }
