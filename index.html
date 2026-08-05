@@ -1766,6 +1766,7 @@ const LOCATION_ROLES = { OFFICE: ['technical','manager'], GYM: ['gym_attendant',
 let state = {
   route: 'checkin',
   checkinWing: 'A',
+  checkinShift: (new Date().getHours() >= 8 && new Date().getHours() < 20) ? 'day' : 'night',
   checkinCode: '',
   checkinResult: null,
   checkinError: '',
@@ -1837,7 +1838,7 @@ async function refreshData(dateKey){
 /* Determine each staff member's latest status from today's events */
 function computeStatusMap(events){
   const map = {};
-  for(const ev of events){ map[ev.staffId] = {type: ev.type, time: ev.time, wing: ev.wing}; }
+  for(const ev of events){ map[ev.staffId] = {type: ev.type, time: ev.time, wing: ev.wing, shift: ev.shift}; }
   return map;
 }
 
@@ -1896,6 +1897,7 @@ function renderCheckin(){
           <h3>${isIn ? 'Checked in' : 'Checked out'}</h3>
           <p>${esc(r.name)} · ${ROLES[r.role]||r.role}</p>
           ${r.wing ? `<p style="color:${WING_COLOR[r.wing]}">${esc(state.wings[r.wing]?.name || r.wing)}</p>` : ''}
+          ${r.shift ? `<p>${r.shift === 'day' ? '☀️ Day shift' : '🌙 Night shift'}</p>` : ''}
           <div class="time">${shortTime(r.time)}</div>
           <button class="again" data-action="checkin-reset">Scan next person</button>
         </div>
@@ -1919,6 +1921,12 @@ function renderCheckin(){
               ${esc(state.wings[w]?.name || ('Wing '+w))}
             </button>`).join('')}
         </div>
+        <div class="wing-picker">
+          <button class="wing-pick-btn ${state.checkinShift==='day'?'active':''}" data-action="pick-shift" data-shift="day"
+            style="${state.checkinShift==='day'?'background:#e0a63c;':''}">☀️ Day shift</button>
+          <button class="wing-pick-btn ${state.checkinShift==='night'?'active':''}" data-action="pick-shift" data-shift="night"
+            style="${state.checkinShift==='night'?'background:#5b9ef5;':''}">🌙 Night shift</button>
+        </div>
         <div class="code-display ${state.checkinCode?'':'empty'}">${state.checkinCode ? '•'.repeat(state.checkinCode.length) : 'Enter code'}</div>
         <div class="keypad">
           ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" data-action="key" data-key="${n}">${n}</button>`).join('')}
@@ -1940,6 +1948,13 @@ function renderDashboard(){
   const statusMap = computeStatusMap(state.todaysEvents);
   const staff = state.staffList;
   const onDuty = (s) => statusMap[s.id]?.type === 'in';
+  const shiftBadge = (staffId) => {
+    const sh = statusMap[staffId]?.shift;
+    if(!sh) return '';
+    return sh === 'day'
+      ? `<span class="role-tag" style="background:rgba(224,166,60,0.14); color:var(--office);">☀️ Day</span>`
+      : `<span class="role-tag" style="background:rgba(91,158,245,0.12); color:var(--wingA);">🌙 Night</span>`;
+  };
 
   const security = staff.filter(s => s.role === 'security');
   const technical = staff.filter(s => s.role === 'technical' && onDuty(s));
@@ -1959,6 +1974,7 @@ function renderDashboard(){
         <div class="duty-row">
           <span class="status-dot on"></span>
           <span class="name">${esc(g.name)}</span>
+          ${shiftBadge(g.id)}
           <span class="phone">${esc(g.phone||'—')}</span>
           <span class="time">${shortTime(statusMap[g.id].time)}</span>
         </div>`).join('') : `<div class="empty-row">No one on duty</div>`}
@@ -1979,6 +1995,7 @@ function renderDashboard(){
           <span class="status-dot on"></span>
           <span class="name">${esc(p.name)}</span>
           <span class="role-tag ${p.role}" style="margin-right:2px;">${ROLES[p.role]}</span>
+          ${p.role === 'technical' ? shiftBadge(p.id) : ''}
           <span class="phone">${esc(p.phone||'—')}</span>
           <span class="time">${shortTime(statusMap[p.id].time)}</span>
         </div>`).join('') : `<div class="empty-row">No one on duty</div>`}
@@ -2111,6 +2128,7 @@ function renderAdminLog(){
       <td>${esc(s.name)}</td>
       <td>${s.role && ROLES[s.role] ? `<span class="role-tag ${s.role}">${ROLES[s.role]}</span>` : '—'}</td>
       <td style="color:${WING_COLOR[ev.wing]||'inherit'}">${esc(state.wings[ev.wing]?.name || ev.wing || '—')}</td>
+      <td>${ev.shift ? (ev.shift==='day' ? '☀️ Day' : '🌙 Night') : '—'}</td>
       <td>${ev.type==='in' ? '<span style="color:var(--green)">IN</span>' : '<span style="color:var(--text-dim)">OUT</span>'}</td>
     </tr>`;
   }).join('');
@@ -2133,7 +2151,7 @@ function renderAdminLog(){
     </div>
     ${filtered.length ? `
     <table>
-      <thead><tr><th>Time</th><th>Name</th><th>Role</th><th>Location</th><th>Type</th></tr></thead>
+      <thead><tr><th>Time</th><th>Name</th><th>Role</th><th>Location</th><th>Shift</th><th>Type</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>` : `<div class="empty-state">No attendance events for this date.</div>`}
     <p class="small-muted" style="margin-top:10px;">This reads directly from the Attendance tab of your Sheet — the Sheet itself is your full permanent record.</p>
@@ -2169,6 +2187,9 @@ function attachHandlers(){
 
   document.querySelectorAll('[data-action="pick-wing"]').forEach(b => b.onclick = () => {
     state.checkinWing = b.dataset.wing; state.checkinError=''; render();
+  });
+  document.querySelectorAll('[data-action="pick-shift"]').forEach(b => b.onclick = () => {
+    state.checkinShift = b.dataset.shift; state.checkinError=''; render();
   });
   document.querySelectorAll('[data-action="key"]').forEach(b => b.onclick = () => {
     const k = b.dataset.key;
@@ -2234,7 +2255,7 @@ async function doCheckin(){
   state.checkinBusy = true; state.checkinError=''; render();
 
   const dKey = todayKey();
-  const res = await apiPost('att_checkin', {code, location: state.checkinWing, date: dKey});
+  const res = await apiPost('att_checkin', {code, location: state.checkinWing, date: dKey, shift: state.checkinShift});
   state.checkinBusy = false;
 
   if(!res || !res.ok){
@@ -2243,7 +2264,7 @@ async function doCheckin(){
     return;
   }
 
-  state.checkinResult = {name: res.staff.name, role: res.staff.role, wing: state.checkinWing, type: res.type, time: res.time};
+  state.checkinResult = {name: res.staff.name, role: res.staff.role, wing: state.checkinWing, type: res.type, time: res.time, shift: res.shift};
   state.checkinCode = '';
   render();
 
@@ -2295,12 +2316,12 @@ function downloadQr(w){
 function exportCsv(){
   const staffMap = {};
   state.staffList.forEach(s => staffMap[s.id]=s);
-  const rows = [['Time','Name','Role','Location','Type']];
+  const rows = [['Time','Name','Role','Location','Shift','Type']];
   state.logEvents
     .filter(ev => state.logRoleFilter==='all' || staffMap[ev.staffId]?.role===state.logRoleFilter)
     .forEach(ev => {
       const s = staffMap[ev.staffId] || {name:'(removed)',role:''};
-      rows.push([new Date(ev.time).toLocaleString(), s.name, ROLES[s.role]||'', state.wings[ev.wing]?.name||ev.wing||'', ev.type]);
+      rows.push([new Date(ev.time).toLocaleString(), s.name, ROLES[s.role]||'', state.wings[ev.wing]?.name||ev.wing||'', ev.shift||'', ev.type]);
     });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv'});
