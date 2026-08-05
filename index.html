@@ -2061,7 +2061,7 @@ function renderAdmin(){
         <input type="password" inputmode="numeric" maxlength="6" id="pin-input" value="${esc(state.pinInput)}" placeholder="••••">
         <button data-action="pin-submit">Unlock</button>
         <div class="error-msg">${esc(state.checkinError)}</div>
-        <p class="small-muted">Default PIN is 1234. Change it by editing the "pin" row in the Config tab of your Sheet.</p>
+        <p class="small-muted">Default PIN is 1234. Changing it requires direct database access (the "pin" row in the app_config table).</p>
       </div>
     </div>`;
   }
@@ -2121,7 +2121,7 @@ function renderAdminQr(){
     <div class="form-row">
       ${WING_IDS.map(w => `<input type="text" class="rename-input" data-action="rename-wing" data-wing="${w}" value="${esc(state.wings[w]?.name||'')}">`).join('')}
     </div>
-    <p class="small-muted">Saved to the Config tab of your Sheet. QR codes below stay valid after renaming.</p>
+    <p class="small-muted">Saved to the database. QR codes below stay valid after renaming.</p>
   </div>
   <div class="panel">
     <p class="section-label">Printable entrance QR codes</p>
