@@ -1,10 +1,13 @@
 """Attendance module endpoints — staff, check-in, admin, config.
 
 Kept fully isolated from the water module: separate tables, separate
-router prefix, no shared queries. The admin PIN model matches the fix
-already made to Code.gs this session: the raw PIN is never returned to
-the client, and every mutating admin action requires it, checked here
-server-side against app_config.
+router prefix, no shared queries. The admin PIN model: the raw PIN is
+never returned to the client, and every mutating admin action requires
+it, checked here server-side against app_config. Every PIN check (verify
+and the ones embedded in mutating actions) goes through the same
+rate-limited path in app/security.py — a real staff/attendance wipe
+happened via a brute-forced default PIN before this existed, so this is
+load-bearing, not defensive boilerplate.
 """
 
 from __future__ import annotations
@@ -16,7 +19,7 @@ from datetime import date as date_type
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app import crud
+from app import crud, security
 from app.config import get_settings
 from app.database import get_db
 from app.errors import AppError
@@ -45,9 +48,26 @@ DEFAULT_WINGS = {
 }
 
 
-def _check_pin(db: Session, pin: str) -> None:
+def _pin_matches(db: Session, pin: str) -> bool:
+    # Rate-limited globally, not per-client-IP: Railway's edge proxy may not
+    # forward a trustworthy client IP into request.client.host, and this app
+    # only ever has one or two legitimate admins, so a global lockout closes
+    # the brute-force gap without depending on proxy header configuration.
+    if security.is_locked_out():
+        raise AppError(
+            "Too many incorrect PIN attempts. Try again in 15 minutes.", status_code=429
+        )
     configured = crud.get_config(db, "pin") or settings.default_admin_pin
-    if not pin or pin != configured:
+    matched = bool(pin) and pin == configured
+    if matched:
+        security.record_success()
+    else:
+        security.record_failure()
+    return matched
+
+
+def _check_pin(db: Session, pin: str) -> None:
+    if not _pin_matches(db, pin):
         raise AppError("Incorrect admin PIN.", status_code=403)
 
 
@@ -84,8 +104,7 @@ def get_attendance_data(
 
 @router.post("/verify-pin")
 def verify_pin(payload: VerifyPinIn, db: Session = Depends(get_db)):
-    configured = crud.get_config(db, "pin") or settings.default_admin_pin
-    return {"ok": payload.pin == configured}
+    return {"ok": _pin_matches(db, payload.pin)}
 
 
 @router.post("/staff")

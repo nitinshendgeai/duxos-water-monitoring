@@ -23,7 +23,14 @@ SETTINGS = get_settings()
 LOCAL_TZ = ZoneInfo(SETTINGS.timezone)
 
 VALID_SESSIONS = {"Morning", "Afternoon", "Night"}
-VALID_ROLES = {"security", "technical", "manager", "gym_attendant"}
+VALID_ROLES = {
+    "security",
+    "technical",
+    "manager",
+    "gym_attendant",
+    "security_supervisor",
+    "housekeeping_supervisor",
+}
 VALID_EVENT_TYPES = {"in", "out"}
 
 

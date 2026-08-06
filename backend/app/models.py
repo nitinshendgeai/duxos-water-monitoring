@@ -119,14 +119,15 @@ class Staff(Base):
     __tablename__ = "staff"
     __table_args__ = (
         CheckConstraint(
-            "role IN ('security','technical','manager','gym_attendant')",
+            "role IN ('security','technical','manager','gym_attendant',"
+            "'security_supervisor','housekeeping_supervisor')",
             name="ck_staff_role",
         ),
     )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_staff_id)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    role: Mapped[str] = mapped_column(String(20), nullable=False)
+    role: Mapped[str] = mapped_column(String(30), nullable=False)
     phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     code: Mapped[str] = mapped_column(String(10), nullable=False)
     deleted_at: Mapped[Optional[datetime]] = mapped_column(

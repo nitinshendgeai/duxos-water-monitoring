@@ -164,7 +164,14 @@ class StaffCreateIn(BaseModel):
     @field_validator("role")
     @classmethod
     def valid_role(cls, v: str) -> str:
-        if v not in ("security", "technical", "manager", "gym_attendant"):
+        if v not in (
+            "security",
+            "technical",
+            "manager",
+            "gym_attendant",
+            "security_supervisor",
+            "housekeeping_supervisor",
+        ):
             raise ValueError("Unknown role.")
         return v
 
