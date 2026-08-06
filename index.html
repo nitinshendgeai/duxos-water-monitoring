@@ -2067,7 +2067,7 @@ function renderAdmin(){
         <input type="password" inputmode="numeric" maxlength="6" id="pin-input" value="${esc(state.pinInput)}" placeholder="••••">
         <button data-action="pin-submit">Unlock</button>
         <div class="error-msg">${esc(state.checkinError)}</div>
-        <p class="small-muted">Default PIN is 1234. Changing it requires direct database access (the "pin" row in the app_config table).</p>
+        <p class="small-muted">Contact the admin for the PIN. It can be changed via the "pin" row in the app_config table.</p>
       </div>
     </div>`;
   }
