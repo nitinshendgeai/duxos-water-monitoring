@@ -25,8 +25,19 @@ def today_local() -> date:
 
 
 def default_shift(moment: Optional[datetime] = None) -> str:
+    """Fallback only — the client normally sends its own shift choice
+    explicitly (see index.html's defaultShiftForHour, which this mirrors).
+    Day starts 8am, Night starts 8pm, but a scan shortly before a shift's
+    start is treated as an early arrival for that shift rather than a
+    leftover of the other one: before 8am defaults to day, and 6pm onward
+    defaults to night.
+    """
     hour = (moment or now_local()).astimezone(_TZ).hour
-    return "day" if 8 <= hour < 20 else "night"
+    if hour < 8:
+        return "day"
+    if hour >= 18:
+        return "night"
+    return "day"
 
 
 def format_display_date(d: date) -> str:

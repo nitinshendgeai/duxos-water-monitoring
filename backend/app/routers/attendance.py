@@ -45,6 +45,7 @@ DEFAULT_WINGS = {
     "C": {"name": "Wing C"},
     "OFFICE": {"name": "Office"},
     "GYM": {"name": "Gym"},
+    "HOUSEKEEPING": {"name": "Housekeeping"},
 }
 
 
@@ -97,7 +98,11 @@ def get_attendance_data(
         )
         for ev in crud.get_attendance_for_date(db, day)
     ]
-    wings = crud.get_wings(db) or DEFAULT_WINGS
+    # Merge (not replace-if-empty): a location added after some wings were
+    # already saved to app_config (e.g. HOUSEKEEPING) still needs a default
+    # name even though the table isn't empty — same reasoning as the
+    # frontend's own Object.assign(defaults, saved) merge in refreshData().
+    wings = {**DEFAULT_WINGS, **crud.get_wings(db)}
 
     return AttDataOut(staff=staff, attendance=events, wings=wings)
 

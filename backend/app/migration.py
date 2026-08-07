@@ -30,6 +30,7 @@ VALID_ROLES = {
     "gym_attendant",
     "security_supervisor",
     "housekeeping_supervisor",
+    "housekeeping",
 }
 VALID_EVENT_TYPES = {"in", "out"}
 

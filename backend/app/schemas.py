@@ -171,6 +171,7 @@ class StaffCreateIn(BaseModel):
             "gym_attendant",
             "security_supervisor",
             "housekeeping_supervisor",
+            "housekeeping",
         ):
             raise ValueError("Unknown role.")
         return v

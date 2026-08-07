@@ -120,7 +120,7 @@ class Staff(Base):
     __table_args__ = (
         CheckConstraint(
             "role IN ('security','technical','manager','gym_attendant',"
-            "'security_supervisor','housekeeping_supervisor')",
+            "'security_supervisor','housekeeping_supervisor','housekeeping')",
             name="ck_staff_role",
         ),
     )
