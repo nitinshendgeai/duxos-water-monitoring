@@ -2010,6 +2010,7 @@ function renderDashboard(){
   const technical = staff.filter(s => s.role === 'technical' && onDuty(s));
   const managers = staff.filter(s => s.role === 'manager' && onDuty(s));
   const gymAttendants = staff.filter(s => s.role === 'gym_attendant' && onDuty(s));
+  const securitySupervisors = staff.filter(s => s.role === 'security_supervisor' && onDuty(s));
   const housekeepingSupervisors = staff.filter(s => s.role === 'housekeeping_supervisor' && onDuty(s));
   const onDutyCount = staff.filter(onDuty).length;
 
@@ -2054,6 +2055,27 @@ function renderDashboard(){
     </div>`;
   };
 
+  // Cross-location roster of everyone at supervisor level, regardless of
+  // which wing/location they scanned in at — separate from "Security — by
+  // wing" (which still shows security_supervisor inline with regular
+  // guards too, tagged "Supervisor") so there's one place to see all
+  // supervisor coverage at a glance.
+  const supervisorGroup = (label, people, colorVar) => `
+    <div class="wing-block">
+      <div class="wing-block-head">
+        <div class="wname"><span class="wing-chip" style="background:${colorVar}"></span>${esc(label)}</div>
+        <div class="wing-count">${people.length} on duty</div>
+      </div>
+      ${people.length ? people.map(p => `
+        <div class="duty-row">
+          <span class="status-dot on"></span>
+          <span class="name">${esc(p.name)}</span>
+          ${shiftBadge(p.id)}
+          <span class="phone">${esc(p.phone||'—')}</span>
+          <span class="time">${shortTime(statusMap[p.id].time)}</span>
+        </div>`).join('') : `<div class="empty-row">No one on duty</div>`}
+    </div>`;
+
   return `
   <div class="stat-strip">
     <div class="stat-card"><div class="n">${onDutyCount}</div><div class="l">Total on duty</div></div>
@@ -2061,7 +2083,7 @@ function renderDashboard(){
     <div class="stat-card"><div class="n">${technical.length}</div><div class="l">Technical on duty</div></div>
     <div class="stat-card"><div class="n">${managers.length}</div><div class="l">Managers on duty</div></div>
     <div class="stat-card"><div class="n">${gymAttendants.length}</div><div class="l">Gym attendants on duty</div></div>
-    <div class="stat-card"><div class="n">${housekeepingSupervisors.length}</div><div class="l">Housekeeping on duty</div></div>
+    <div class="stat-card"><div class="n">${housekeepingSupervisors.length}</div><div class="l">Housekeeping Supervisors on duty</div></div>
   </div>
   <div class="board-grid">
     <div>
@@ -2073,6 +2095,15 @@ function renderDashboard(){
       ${locationBlock('OFFICE')}
       <p class="section-label" style="margin-top:16px;">Gym</p>
       ${locationBlock('GYM')}
+    </div>
+  </div>
+  <p class="section-label" style="margin-top:16px;">Supervisors</p>
+  <div class="board-grid">
+    <div>
+      ${supervisorGroup('Security Supervisors', securitySupervisors, WING_COLOR.C)}
+    </div>
+    <div>
+      ${supervisorGroup('Housekeeping Supervisors', housekeepingSupervisors, WING_COLOR.HOUSEKEEPING)}
     </div>
   </div>`;
 }
